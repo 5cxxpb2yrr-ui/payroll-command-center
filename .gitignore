@@ -1,0 +1,13 @@
+# Local Sandbox Persistence Data
+.DS_Store
+Thumbs.db
+*.log
+
+# Dev environment overrides
+.env.local
+.env.*.local
+
+# Backup or temporary local iterations
+index_bak.html
+index_old.html
+*.tmp
