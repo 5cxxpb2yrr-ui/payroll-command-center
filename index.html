@@ -577,11 +577,11 @@
         </div>
         <div :class="['sidebar-backdrop',{show:sidebarOpen}]" @click="toggleSidebar"></div>
 
-        <div :class="['sheet',{open:sheetOpen}]" v-if="sheetOpen">
+        <div :class="['sheet',{open:sheetOpen}]" v-if="sheetOpen && activeDay">
             <div class="row">
                 <div>
-                    <h3 style="margin:0">{{ activeDay?.dateShort }} — Configuration Block</h3>
-                    <div class="muted small">{{ activeDay?.label }}</div>
+                    <h3 style="margin:0">{{ activeDay.dateShort }} — Configuration Block</h3>
+                    <div class="muted small">{{ activeDay.label }}</div>
                 </div>
                 <button class="ghost" @click="closeSheet">Close</button>
             </div>
@@ -593,7 +593,7 @@
                     <option value="Emergency PTO">Emergency PTO</option>
                     <option value="Holiday Leave Taken">Holiday Leave Taken</option>
                 </select>
-                <div style="margin-top:16px" v-if="!activeDay?.isDefaultWorkDay">
+                <div style="margin-top:16px" v-if="!activeDay.isDefaultWorkDay">
                     <label class="small muted">Weekend System Coverage</label>
                     <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
                         <input type="checkbox" v-model="activeDayData.shiftCoverage" id="covToggle">
@@ -628,7 +628,6 @@
 
     <script src="https://unpkg.com/vue@2.7.14/dist/vue.min.js"></script>
     <script>
-        // Explicitly scoped helper to prevent global leaks
         window.debounce = function(fn, wait) {
             let t; 
             return function(...a) {
@@ -637,7 +636,6 @@
             };
         };
 
-        // Core Financial Engine Factory
         function createFinancialCommandEngine(config = {}) {
             function toISO(d) {
                 try {
@@ -663,7 +661,6 @@
             };
 
             const calendarEngine = (function() {
-                // Hardened state object tracking fields directly without proxy loops
                 const state = {
                     currentYear: new Date().getFullYear(),
                     currentMonth: new Date().getMonth(),
@@ -705,11 +702,10 @@
                         });
                     }
 
-                    // Directly update the flat reactive state parameters to bypass recursive tracking loops
                     state.blanks = Array.from({ length: startBlankCount }, (_, i) => i);
                     state.days = dayArray;
                     state.monthLabel = first.toLocaleString(undefined, { month: 'long', year: 'numeric' });
-                    state.monthMetrics: { gross: grossTotal, net: grossTotal, leaveHrs: leaveHrsTotal };
+                    state.monthMetrics = { gross: grossTotal, net: grossTotal, leaveHrs: leaveHrsTotal };
                 }
 
                 return {
