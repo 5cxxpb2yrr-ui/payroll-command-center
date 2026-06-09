@@ -339,7 +339,7 @@
             <div class="summary-left">
                 <div style="display:flex;align-items:center;gap:12px">
                     <div style="font-weight:800; font-size:1.1rem;">
-                        {{ fce.calendar.monthLabel }}
+                        {{ fce.calendar.state.monthLabel }}
                     </div>
                     <div style="display:flex;gap:6px">
                         <button class="ghost" style="padding:4px 8px;" @click="fce.calendar.prevMonth()">◀</button>
@@ -357,7 +357,7 @@
                     </div>
                     <div class="kpi">
                         <small class="muted small">Planned Leave</small>
-                        <b style="color:var(--accent)">{{ fce.calendar.monthMetrics.leaveHrs }}h</b>
+                        <b style="color:var(--accent)">{{ fce.calendar.state.monthMetrics.leaveHrs }}h</b>
                     </div>
                 </div>
             </div>
@@ -430,8 +430,8 @@
                         <div class="cal-cell" style="opacity:.6;font-weight:700;text-align:center;min-height:unset;" v-for="w in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']" :key="w">
                             {{ w }}
                         </div>
-                        <div v-for="b in fce.calendar.blanks" :key="'b'+b" class="cal-cell" style="background:transparent;border:none;"></div>
-                        <div v-for="d in fce.calendar.days" :key="d.iso" class="cal-cell" @click="openDayModal(d)">
+                        <div v-for="b in fce.calendar.state.blanks" :key="'b'+b" class="cal-cell" style="background:transparent;border:none;"></div>
+                        <div v-for="d in fce.calendar.state.days" :key="d.iso" class="cal-cell" @click="openDayModal(d)">
                             <div style="display:flex;justify-content:space-between;align-items:center">
                                 <div class="num">{{ d.dayNum }}</div>
                                 <div class="gross">{{ fmt(d.estGross) }}</div>
@@ -628,24 +628,30 @@
 
     <script src="https://unpkg.com/vue@2.7.14/dist/vue.min.js"></script>
     <script>
-        function debounce(fn, wait) {
-            let t; return function(...a) {
-                clearTimeout(t); t = setTimeout(()=>fn.apply(this, a), wait);
+        // Explicitly scoped helper to prevent global leaks
+        window.debounce = function(fn, wait) {
+            let t; 
+            return function(...a) {
+                clearTimeout(t); 
+                t = setTimeout(() => fn.apply(this, a), wait);
             };
-        }
+        };
 
+        // Core Financial Engine Factory
         function createFinancialCommandEngine(config = {}) {
             function toISO(d) {
-                return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+                try {
+                    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+                } catch(e) {
+                    return new Date().toISOString().slice(0, 10);
+                }
             }
             function sum(obj) {
-                return Object.values(obj || {}).reduce((a, v)=>a+Number(v || 0), 0);
+                return Object.values(obj || {}).reduce((a, v) => a + Number(v || 0), 0);
             }
 
             const taxEngine = {
-                state: {
-                    enableFedWithholding: config.tax?.enableFedWithholding ?? true
-                },
+                state: { enableFedWithholding: config.tax?.enableFedWithholding ?? true },
                 computeSimple(taxableGross) {
                     return {
                         ss: taxableGross * 0.062,
@@ -657,76 +663,70 @@
             };
 
             const calendarEngine = (function() {
+                // Hardened state object tracking fields directly without proxy loops
                 const state = {
                     currentYear: new Date().getFullYear(),
                     currentMonth: new Date().getMonth(),
                     scheduledLeaveLog: [],
-                    baseDailyRate: config.calendar?.baseDailyRate || 0
-                };
-                let derived = {
-                    blanks: [], days: [], monthLabel: '', monthMetrics: { gross: 0, net: 0, leaveHrs: 0 }
+                    baseDailyRate: config.calendar?.baseDailyRate || 0,
+                    blanks: [],
+                    days: [],
+                    monthLabel: '',
+                    monthMetrics: { gross: 0, net: 0, leaveHrs: 0 }
                 };
 
                 function recompute() {
                     const year = state.currentYear;
                     const month = state.currentMonth;
                     const first = new Date(year, month, 1);
-                    const daysInMonth = new Date(year, month+1, 0).getDate();
-                    const blanks = first.getDay();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const startBlankCount = first.getDay();
                     const today = new Date();
                     let grossTotal = 0, leaveHrsTotal = 0;
-                    const days = [];
+                    const dayArray = [];
+                    
                     for (let d = 1; d <= daysInMonth; d++) {
                         const date = new Date(year, month, d);
                         const iso = toISO(date);
-                        const log = state.scheduledLeaveLog.find(l=>l.date === iso) || null;
+                        const log = state.scheduledLeaveLog.find(l => l.date === iso) || null;
                         const isDefaultWorkDay = [1, 2, 3, 4, 5].includes(date.getDay());
-                        const isToday = date.toDateString() === today.toDateString();
                         const leaveType = log?.leaveType || "";
                         const shiftCoverage = !!log?.shiftCoverage;
                         let payMultiplier = isDefaultWorkDay ? 1 : 0;
-                        if (leaveType) {
-                            payMultiplier = 1; leaveHrsTotal += 12;
-                        }
+                        if (leaveType) { payMultiplier = 1; leaveHrsTotal += 12; }
                         if (shiftCoverage) payMultiplier *= 1.5;
                         const estGross = state.baseDailyRate * payMultiplier;
                         grossTotal += estGross;
-                        days.push({
-                            iso, date, dayNum: d, isDefaultWorkDay, isToday, leaveType, shiftCoverage, estGross
+                        
+                        dayArray.push({
+                            iso, date, dayNum: d, isDefaultWorkDay, 
+                            isToday: date.toDateString() === today.toDateString(), 
+                            leaveType, shiftCoverage, estGross
                         });
                     }
-                    derived = {
-                        blanks: Array.from({ length: blanks }, (_, i)=>i),
-                        days,
-                        monthLabel: first.toLocaleString(undefined, { month: 'long', year: 'numeric' }),
-                        monthMetrics: { gross: grossTotal, net: grossTotal, leaveHrs: leaveHrsTotal }
-                    };
+
+                    // Directly update the flat reactive state parameters to bypass recursive tracking loops
+                    state.blanks = Array.from({ length: startBlankCount }, (_, i) => i);
+                    state.days = dayArray;
+                    state.monthLabel = first.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+                    state.monthMetrics: { gross: grossTotal, net: grossTotal, leaveHrs: leaveHrsTotal };
                 }
-                recompute();
 
                 return {
                     state,
-                    get blanks() { return derived.blanks; },
-                    get days() { return derived.days; },
-                    get monthLabel() { return derived.monthLabel; },
-                    get monthMetrics() { return derived.monthMetrics; },
                     recompute,
                     nextMonth() {
-                        state.currentMonth++; if (state.currentMonth > 11) {
-                            state.currentMonth = 0; state.currentYear++;
-                        } recompute();
+                        state.currentMonth++; if (state.currentMonth > 11) { state.currentMonth = 0; state.currentYear++; }
+                        recompute();
                     },
                     prevMonth() {
-                        state.currentMonth--; if (state.currentMonth < 0) {
-                            state.currentMonth = 11; state.currentYear--;
-                        } recompute();
+                        state.currentMonth--; if (state.currentMonth < 0) { state.currentMonth = 11; state.currentYear--; }
+                        recompute();
                     },
                     upsertDayConfig(iso, payload) {
-                        state.scheduledLeaveLog = state.scheduledLeaveLog.filter(l=>l.date !== iso);
+                        state.scheduledLeaveLog = state.scheduledLeaveLog.filter(l => l.date !== iso);
                         if (payload.leaveType || payload.shiftCoverage) {
-                            state.scheduledLeaveLog.push({
-                                date: iso, leaveType: payload.leaveType, shiftCoverage: payload.shiftCoverage, hours: 12
-                            });
+                            state.scheduledLeaveLog.push({ date: iso, leaveType: payload.leaveType, shiftCoverage: payload.shiftCoverage, hours: 12 });
                         }
                         recompute();
                     }
@@ -734,40 +734,32 @@
             })();
 
             const timecardEngine = (function() {
-                const state = {
-                    days: [],
-                    hourOptions: config.timecard?.hourOptions || [0, 4, 6, 8, 10, 12],
-                    startDate: null
-                };
+                const state = { days: [], hourOptions: config.timecard?.hourOptions || [0, 4, 6, 8, 10, 12], startDate: null };
                 function buildPeriod(startDate) {
                     const start = new Date(startDate);
                     state.startDate = new Date(start);
                     state.days = [];
                     for (let i = 0; i < 14; i++) {
                         const d = new Date(start);
-                        d.setDate(start.getDate()+i);
+                        d.setDate(start.getDate() + i);
                         const iso = toISO(d);
                         const label = d.toLocaleString('en-US', { weekday: 'short' });
                         const dateShort = d.toLocaleString('en-US', { month: 'numeric', day: 'numeric' });
                         const isDefaultWorkDay = !['Sat', 'Sun'].includes(label);
                         state.days.push({
-                            iso, date: d, label, dateShort, isDefaultWorkDay, reg: isDefaultWorkDay?12: 0, ot: 0, dt: 0, eptoChecked: false
+                            iso, date: d, label, dateShort, isDefaultWorkDay, reg: isDefaultWorkDay ? 12 : 0, ot: 0, dt: 0, eptoChecked: false
                         });
-                    }
-                }
-                function toggleEPTO(idx) {
-                    const d = state.days[idx];
-                    d.eptoChecked = !d.eptoChecked;
-                    if (d.eptoChecked) {
-                        d.reg = 0; d.ot = 0;
-                    } else {
-                        d.reg = d.isDefaultWorkDay?12: 0;
                     }
                 }
                 return {
                     state,
                     buildPeriod,
-                    toggleEPTO
+                    toggleEPTO(idx) {
+                        const d = state.days[idx];
+                        if (!d) return;
+                        d.eptoChecked = !d.eptoChecked;
+                        if (d.eptoChecked) { d.reg = 0; d.ot = 0; } else { d.reg = d.isDefaultWorkDay ? 12 : 0; }
+                    }
                 };
             })();
 
@@ -779,11 +771,7 @@
                     postTax: { ...(config.payroll?.postTaxDefaults || {}) },
                     preTaxLabels: { med: 'Medical Plan Premium', dental: 'Dental Premium', k401: 'Pre-Tax 401(k)' },
                     postTaxLabels: { roth: 'Roth 401(k) Contribution' },
-                    preTaxTotal: 0,
-                    postTaxTotal: 0,
-                    stats: {},
-                    pay: { taxes: {} },
-                    dtPay: 0
+                    preTaxTotal: 0, postTaxTotal: 0, stats: {}, pay: { taxes: {} }, dtPay: 0
                 };
 
                 function recomputeFromTimecard() {
@@ -793,7 +781,7 @@
                     let s = { w1Reg: 0, w1OT: 0, w2Reg: 0, w2OT: 0, dtHrs: 0 };
                     let w1CumulativeReg = 0, w2CumulativeReg = 0;
 
-                    days.forEach((d, i)=> {
+                    days.forEach((d, i) => {
                         let inputReg = Number(d.reg || 0);
                         let inputOt = Number(d.ot || 0);
                         let inputDt = Number(d.dt || 0);
@@ -802,63 +790,43 @@
                             s.dtHrs += inputDt;
                         } else if (i < 7) {
                             if (w1CumulativeReg + inputReg > 40) {
-                                let allowedReg = Math.max(0, 40-w1CumulativeReg);
-                                s.w1Reg += allowedReg;
-                                s.w1OT += (inputReg-allowedReg)+inputOt;
-                                w1CumulativeReg += allowedReg;
+                                let allowedReg = Math.max(0, 40 - w1CumulativeReg);
+                                s.w1Reg += allowedReg; s.w1OT += (inputReg - allowedReg) + inputOt; w1CumulativeReg += allowedReg;
                             } else {
-                                s.w1Reg += inputReg;
-                                s.w1OT += inputOt;
-                                w1CumulativeReg += inputReg;
+                                s.w1Reg += inputReg; s.w1OT += inputOt; w1CumulativeReg += inputReg;
                             }
                         } else {
                             if (w2CumulativeReg + inputReg > 40) {
-                                let allowedReg = Math.max(0, 40-w2CumulativeReg);
-                                s.w2Reg += allowedReg;
-                                s.w2OT += (inputReg-allowedReg)+inputOt;
-                                w2CumulativeReg += allowedReg;
+                                let allowedReg = Math.max(0, 40 - w2CumulativeReg);
+                                s.w2Reg += allowedReg; s.w2OT += (inputReg - allowedReg) + inputOt; w2CumulativeReg += allowedReg;
                             } else {
-                                s.w2Reg += inputReg;
-                                s.w2OT += inputOt;
-                                w2CumulativeReg += inputReg;
+                                s.w2Reg += inputReg; s.w2OT += inputOt; w2CumulativeReg += inputReg;
                             }
                         }
                     });
 
-                    const stats = state.stats;
-                    const pay = state.pay;
+                    Object.assign(state.stats, {
+                        w1GrossNoOT: s.w1Reg * baseRate, w2GrossNoOT: s.w2Reg * baseRate,
+                        w1OT: s.w1OT, w2OT: s.w2OT, w1OTPay: s.w1OT * (baseRate * 1.5)
+                    });
 
-                    stats.w1GrossNoOT = s.w1Reg * baseRate;
-                    stats.w2GrossNoOT = s.w2Reg * baseRate;
-                    stats.w1OT = s.w1OT;
-                    stats.w2OT = s.w2OT;
-                    stats.w1OTPay = s.w1OT * (baseRate * 1.5);
-
-                    let w2RegGross = stats.w2GrossNoOT + incentiveAmt;
+                    let w2RegGross = state.stats.w2GrossNoOT + incentiveAmt;
                     let totalW2ActiveHours = s.w2Reg + s.w2OT;
-                    if (totalW2ActiveHours > 0) {
-                        stats.w2OTRate = (w2RegGross / totalW2ActiveHours) * 1.5;
-                    } else {
-                        stats.w2OTRate = baseRate * 1.5;
-                    }
-                    stats.w2OTPay = s.w2OT * stats.w2OTRate;
+                    state.stats.w2OTRate = totalW2ActiveHours > 0 ? (w2RegGross / totalW2ActiveHours) * 1.5 : baseRate * 1.5;
+                    state.stats.w2OTPay = s.w2OT * state.stats.w2OTRate;
                     state.dtPay = s.dtHrs * baseRate * 2.0;
 
-                    let earnings = stats.w1GrossNoOT + stats.w2GrossNoOT + stats.w1OTPay + stats.w2OTPay + state.dtPay + incentiveAmt;
-                    pay.gross = earnings;
-
+                    let earnings = state.stats.w1GrossNoOT + state.stats.w2GrossNoOT + state.stats.w1OTPay + state.stats.w2OTPay + state.dtPay + incentiveAmt;
+                    state.pay.gross = earnings;
                     state.preTaxTotal = sum(state.preTax);
                     state.postTaxTotal = sum(state.postTax);
 
                     let taxableGross = Math.max(0, earnings - state.preTaxTotal);
                     const taxes = taxEngine.computeSimple(taxableGross);
 
-                    pay.taxes.ss = taxes.ss;
-                    pay.taxes.med = taxes.med;
-                    pay.taxes.state = taxes.state;
-                    pay.taxes.federal = taxes.federal;
-                    pay.taxesTotal = taxes.ss + taxes.med + taxes.state + taxes.federal;
-                    pay.net = Math.max(0, earnings - state.preTaxTotal - pay.taxesTotal - state.postTaxTotal);
+                    Object.assign(state.pay.taxes, taxes);
+                    state.pay.taxesTotal = taxes.ss + taxes.med + taxes.state + taxes.federal;
+                    state.pay.net = Math.max(0, earnings - state.preTaxTotal - state.pay.taxesTotal - state.postTaxTotal);
 
                     try {
                         localStorage.setItem("kia_pre_v2", JSON.stringify(state.preTax));
@@ -867,106 +835,63 @@
                     } catch(e) {}
                 }
 
-                return {
-                    state,
-                    recomputeFromTimecard
-                };
+                return { state, recomputeFromTimecard };
             })();
 
-            function calculatePayrollMatrix() {
-                payrollEngine.recomputeFromTimecard();
-            }
-
-            function buildPayPeriod(startDate) {
-                timecardEngine.buildPeriod(startDate);
-                const d = new Date(startDate);
-                calendarEngine.state.currentYear = d.getFullYear();
-                calendarEngine.state.currentMonth = d.getMonth();
-                calendarEngine.recompute();
-                payrollEngine.recomputeFromTimecard();
-            }
-
-            function shiftPayPeriod(delta) {
-                const start = timecardEngine.state.startDate ? new Date(timecardEngine.state.startDate) : new Date();
-                const newStart = new Date(start);
-                newStart.setDate(start.getDate() + delta*14);
-                buildPayPeriod(newStart);
-            }
-
             return {
-                calendar: calendarEngine,
-                timecard: timecardEngine,
-                payroll: payrollEngine,
-                tax: taxEngine,
-                calculatePayrollMatrix,
-                buildPayPeriod,
-                shiftPayPeriod
+                calendar: calendarEngine, timecard: timecardEngine, payroll: payrollEngine, tax: taxEngine,
+                calculatePayrollMatrix() { payrollEngine.recomputeFromTimecard(); },
+                buildPayPeriod(startDate) {
+                    timecardEngine.buildPeriod(startDate);
+                    const d = new Date(startDate);
+                    calendarEngine.state.currentYear = d.getFullYear();
+                    calendarEngine.state.currentMonth = d.getMonth();
+                    calendarEngine.recompute();
+                    payrollEngine.recomputeFromTimecard();
+                },
+                shiftPayPeriod(delta) {
+                    const start = timecardEngine.state.startDate ? new Date(timecardEngine.state.startDate) : new Date();
+                    start.setDate(start.getDate() + delta * 14);
+                    this.buildPayPeriod(start);
+                }
             };
         }
 
-        const fce = createFinancialCommandEngine({
+        const engineInstance = createFinancialCommandEngine({
             calendar: { baseDailyRate: 333.12 },
-            timecard: { hourOptions: [0, 4, 6, 8, 10, 12] },
-            payroll: {
-                baseRate: 41.64,
-                preTaxDefaults: { med: 0, dental: 0, k401: 0 },
-                postTaxDefaults: { roth: 0 }
-            },
-            tax: { enableFedWithholding: true }
+            payroll: { baseRate: 41.64, preTaxDefaults: { med: 0, dental: 0, k401: 0 }, postTaxDefaults: { roth: 0 } }
         });
 
         new Vue({
             el: '#app',
-            data() {
+            data: function() {
                 return {
-                    fce,
-                    tab: 'time',
-                    sidebarOpen: false,
-                    sheetOpen: false,
-                    activeDay: null,
-                    activeDayData: { leaveType: '', shiftCoverage: false },
-                    startIsoLocal: ''
+                    fce: engineInstance, tab: 'time', sidebarOpen: false, sheetOpen: false,
+                    activeDay: null, activeDayData: { leaveType: '', shiftCoverage: false }, startIsoLocal: ''
                 };
             },
             computed: {
                 periodLabel() {
                     const days = this.fce.timecard.state.days;
-                    if (!days.length) return '—';
-                    return days[0].dateShort + ' — ' + days[days.length-1].dateShort;
+                    return days.length ? days[0].dateShort + ' — ' + days[days.length - 1].dateShort : '—';
                 },
                 taxableGross() {
-                    const pay = this.fce.payroll.pay;
-                    const pre = this.fce.payroll.state.preTaxTotal;
-                    return Math.max(0, (pay.gross || 0) - pre);
+                    return Math.max(0, (this.fce.payroll.pay.gross || 0) - this.fce.payroll.state.preTaxTotal);
                 },
                 debugDump() {
-                    return JSON.stringify({
-                        calendar: this.fce.calendar.state,
-                        timecard: this.fce.timecard.state,
-                        payroll: this.fce.payroll.state,
-                        tax: this.fce.tax.state
-                    }, null, 2);
+                    return JSON.stringify({ calendar: this.fce.calendar.state, timecard: this.fce.timecard.state, payroll: this.fce.payroll.state }, null, 2);
                 }
             },
             methods: {
-                fmt(v) {
-                    return '$' + Number(v || 0).toFixed(2);
-                },
-                toggleSidebar() {
-                    this.sidebarOpen = !this.sidebarOpen;
-                },
+                fmt(v) { return '$' + Number(v || 0).toFixed(2); },
+                toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; },
                 openDayModal(d) {
                     this.activeDay = d;
-                    const log = this.fce.calendar.state.scheduledLeaveLog.find(l=>l.date === d.iso) || {};
-                    this.activeDayData = {
-                        leaveType: log.leaveType || '',
-                        shiftCoverage: !!log.shiftCoverage
-                    };
+                    const log = this.fce.calendar.state.scheduledLeaveLog.find(l => l.date === d.iso) || {};
+                    this.activeDayData = { leaveType: log.leaveType || '', shiftCoverage: !!log.shiftCoverage };
                     this.sheetOpen = true;
                 },
-                closeSheet() {
-                    this.sheetOpen = false; this.activeDay = null;
-                },
+                closeSheet() { this.sheetOpen = false; this.activeDay = null; },
                 commitDay() {
                     if (!this.activeDay) return;
                     this.fce.calendar.upsertDayConfig(this.activeDay.iso, this.activeDayData);
@@ -978,30 +903,27 @@
                     this.fce.calculatePayrollMatrix();
                 },
                 autoFillFromCalendar() {
-                    this.fce.timecard.state.days.forEach(td=> {
-                        const calDay = this.fce.calendar.days.find(cd=>cd.iso === td.iso);
+                    this.fce.timecard.state.days.forEach(td => {
+                        const calDay = this.fce.calendar.state.days.find(cd => cd.iso === td.iso);
                         td.reg = calDay && calDay.isDefaultWorkDay ? 12 : 0;
                         td.ot = 0; td.dt = 0; td.eptoChecked = false;
                     });
                     this.fce.calculatePayrollMatrix();
                 },
                 clearTimecard() {
-                    this.fce.timecard.state.days.forEach(td=> {
-                        td.reg = 0; td.ot = 0; td.dt = 0; td.eptoChecked = false;
-                    });
+                    this.fce.timecard.state.days.forEach(td => { td.reg = 0; td.ot = 0; td.dt = 0; td.eptoChecked = false; });
                     this.fce.calculatePayrollMatrix();
                 },
                 saveDeductions() {
                     const st = this.fce.payroll.state;
-                    st.preTaxTotal = Object.values(st.preTax).reduce((a, v)=>a+Number(v || 0), 0);
-                    st.postTaxTotal = Object.values(st.postTax).reduce((a, v)=>a+Number(v || 0), 0);
+                    st.preTaxTotal = Object.values(st.preTax).reduce((a, v) => a + Number(v || 0), 0);
+                    st.postTaxTotal = Object.values(st.postTax).reduce((a, v) => a + Number(v || 0), 0);
                     this.debouncedRecompute();
                 },
                 applyStart() {
                     if (!this.startIsoLocal) return;
-                    const d = new Date(this.startIsoLocal+'T00:00:00');
-                    this.fce.buildPayPeriod(d);
-                    localStorage.setItem('kia_pay_period_start', this.startIsoLocal);
+                    this.fce.buildPayPeriod(new Date(this.startIsoLocal + 'T00:00:00'));
+                    try { localStorage.setItem('kia_pay_period_start', this.startIsoLocal); } catch(e) {}
                     this.sidebarOpen = false;
                 },
                 setStartToThisMonth() {
@@ -1011,94 +933,77 @@
                 },
                 setStartToLastPayPeriod() {
                     const cur = this.fce.timecard.state.startDate ? new Date(this.fce.timecard.state.startDate) : new Date();
-                    cur.setDate(cur.getDate()-14);
+                    cur.setDate(cur.getDate() - 14);
                     this.startIsoLocal = cur.toISOString().slice(0, 10);
                     this.applyStart();
                 },
                 setStartToToday() {
-                    const d = new Date();
-                    this.startIsoLocal = d.toISOString().slice(0, 10);
+                    this.startIsoLocal = new Date().toISOString().slice(0, 10);
                     this.applyStart();
                 },
                 prevPeriod() {
                     this.fce.shiftPayPeriod(-1);
-                    const s = this.fce.timecard.state.startDate;
-                    if (s) localStorage.setItem('kia_pay_period_start', s.toISOString().slice(0, 10));
+                    this.syncPeriodStorage();
                 },
                 nextPeriod() {
                     this.fce.shiftPayPeriod(1);
-                    const s = this.fce.timecard.state.startDate;
-                    if (s) localStorage.setItem('kia_pay_period_start', s.toISOString().slice(0, 10));
+                    this.syncPeriodStorage();
+                },
+                syncPeriodStorage() {
+                    try {
+                        const s = this.fce.timecard.state.startDate;
+                        if (s) localStorage.setItem('kia_pay_period_start', s.toISOString().slice(0, 10));
+                    } catch(e) {}
                 },
                 saveAll() {
                     try {
                         localStorage.setItem('kia_state', JSON.stringify({
-                            pre: this.fce.payroll.state.preTax,
-                            post: this.fce.payroll.state.postTax,
+                            pre: this.fce.payroll.state.preTax, post: this.fce.payroll.state.postTax,
                             incentive: this.fce.payroll.state.incentiveAmt,
                             payStart: this.fce.timecard.state.startDate ? this.fce.timecard.state.startDate.toISOString().slice(0, 10) : null
                         }));
                         alert('State Saved.');
-                    } catch(e) {
-                        alert('Save failed.');
-                    }
+                    } catch(e) { alert('Save failed.'); }
                 },
                 loadAll() {
                     try {
                         const raw = localStorage.getItem('kia_state');
-                        if (!raw) return alert('No saved state context found.');
+                        if (!raw) return alert('No saved state found.');
                         const obj = JSON.parse(raw);
                         if (obj.pre) this.fce.payroll.state.preTax = obj.pre;
                         if (obj.post) this.fce.payroll.state.postTax = obj.post;
-                        if (obj.incentive != null) this.fce.payroll.state.incentiveAmt = Number(obj.incentive || 0);
-                        if (obj.payStart) {
-                            this.startIsoLocal = obj.payStart; this.applyStart();
-                        }
+                        if (obj.incentive != null) this.fce.payroll.state.incentiveAmt = Number(obj.incentive);
+                        if (obj.payStart) { this.startIsoLocal = obj.payStart; this.applyStart(); }
                         this.fce.calculatePayrollMatrix();
-                        alert('State Configuration Loaded.');
-                    } catch(e) {
-                        alert('Load transaction broke hierarchy execution.');
-                    }
+                        alert('State Loaded.');
+                    } catch(e) { alert('Load failed.'); }
                 },
                 clearAll() {
                     if (!confirm('Clear local system persistence frames?')) return;
-                    localStorage.removeItem('kia_state');
-                    localStorage.removeItem('kia_pre_v2');
-                    localStorage.removeItem('kia_post_v2');
-                    localStorage.removeItem('kia_incentive_v2');
-                    alert('Persistence Cleared.');
+                    try {
+                        localStorage.clear();
+                        alert('Persistence Cleared.');
+                    } catch(e) {}
                 },
                 exportPreview() {
-                    const rows = [];
-                    rows.push(['Date', 'Reg_Hrs', 'OT_Hrs', 'DT_Hrs'].join(','));
-                    this.fce.timecard.state.days.forEach(d=> {
-                        rows.push([d.iso, d.reg || 0, d.ot || 0, d.dt || 0].join(','));
-                    });
-                    const csv = rows.join('\n');
+                    const rows = [['Date', 'Reg_Hrs', 'OT_Hrs', 'DT_Hrs'].join(',')];
+                    this.fce.timecard.state.days.forEach(d => rows.push([d.iso, d.reg || 0, d.ot || 0, d.dt || 0].join(',')));
                     const w = window.open('', '_blank');
-                    w.document.body.style.background = '#050506';
-                    w.document.body.style.color = '#fff';
-                    w.document.body.style.padding = '16px';
-                    const pre = w.document.createElement('pre');
-                    pre.style.whiteSpace = 'pre-wrap';
-                    pre.style.fontFamily = 'monospace';
-                    pre.textContent = csv;
-                    w.document.body.appendChild(pre);
+                    w.document.body.innerHTML = `<pre style="background:#050506;color:#fff;padding:16px;white-space:pre-wrap;font-family:monospace">${rows.join('\n')}</pre>`;
                 },
-                debouncedRecompute: debounce(function() {
+                debouncedRecompute: window.debounce(function() {
                     this.fce.calculatePayrollMatrix();
                 }, 220)
             },
             created() {
-                const saved = localStorage.getItem('kia_pay_period_start');
-                let start;
-                if (saved) {
-                    start = new Date(saved+'T00:00:00');
-                } else {
-                    start = new Date(); start.setDate(1);
-                }
+                let saved = null;
+                try { saved = localStorage.getItem('kia_pay_period_start'); } catch(e) {}
+                let start = saved ? new Date(saved + 'T00:00:00') : new Date();
+                if (!saved) start.setDate(1);
+                
                 this.startIsoLocal = start.toISOString().slice(0, 10);
                 this.fce.buildPayPeriod(start);
+                
                 try {
                     const pre = JSON.parse(localStorage.getItem('kia_pre_v2') || '{}');
                     const post = JSON.parse(localStorage.getItem('kia_post_v2') || '{}');
@@ -1107,10 +1012,11 @@
                     if (post) this.fce.payroll.state.postTax = post;
                     this.fce.payroll.state.incentiveAmt = inc;
                 } catch(e) {}
+                
                 this.fce.calculatePayrollMatrix();
                 window.fce = this.fce;
             }
         });
     </script>
 </body>
-  </html>
+    </html>
