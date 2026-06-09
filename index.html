@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <title>Payroll Command Center</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         :root {
             --bg: #050506;
@@ -15,9 +16,7 @@
             --gap: 12px;
             --tab-height: 64px;
         }
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         html, body {
             height: 100%;
             background: var(--bg);
@@ -28,7 +27,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial;
             color: #fff;
             -webkit-font-smoothing: antialiased;
-            -webkit-text-size-adjust: 100%;
             padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom));
         }
         .app {
@@ -38,14 +36,11 @@
             display: flex;
             flex-direction: column;
             gap: var(--gap);
-            opacity: 1;
-            visibility: visible;
         }
         .card {
             background: var(--card);
             border-radius: 12px;
             padding: 12px;
-            box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset;
             border: 1px solid rgba(255,255,255,0.04);
         }
         .summary-bar {
@@ -54,11 +49,7 @@
             gap: 12px;
             align-items: flex-start;
         }
-        .summary-left {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
+        .summary-left { flex: 1; }
         .month-nav {
             display: flex;
             align-items: center;
@@ -79,9 +70,7 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        .nav-btn:hover {
-            background: rgba(255,255,255,0.05);
-        }
+        .nav-btn:hover { background: rgba(255,255,255,0.05); }
         .summary-kpis {
             display: flex;
             gap: 8px;
@@ -114,12 +103,8 @@
             font-size: 13px;
             border: 1px solid rgba(255,255,255,0.04);
         }
-        .muted {
-            color: var(--muted);
-        }
-        .small {
-            font-size: 13px;
-        }
+        .muted { color: var(--muted); }
+        .small { font-size: 13px; }
         .ghost {
             background: transparent;
             border: 1px solid rgba(255,255,255,0.08);
@@ -130,12 +115,7 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        .ghost:hover {
-            background: rgba(255,255,255,0.05);
-        }
-        .ghost:active {
-            opacity: 0.9;
-        }
+        .ghost:hover { background: rgba(255,255,255,0.05); }
         .save-btn {
             background: var(--accent);
             color: #02120f;
@@ -145,19 +125,12 @@
             border: none;
             font-size: 14px;
             cursor: pointer;
-            transition: opacity 0.2s;
         }
-        .save-btn:hover {
-            opacity: 0.95;
-        }
-        .save-btn:active {
-            opacity: 0.9;
-        }
+        .save-btn:hover { opacity: 0.95; }
         .tabs {
             display: flex;
             gap: 6px;
             margin-bottom: 12px;
-            overflow-x: auto;
             flex-wrap: wrap;
         }
         .tab {
@@ -168,23 +141,14 @@
             font-weight: 600;
             cursor: pointer;
             font-size: 13px;
-            white-space: nowrap;
             border: 1px solid transparent;
             transition: all 0.2s;
         }
-        .tab:hover {
-            color: #fff;
-        }
+        .tab:hover { color: #fff; }
         .tab.active {
             background: #121214;
             color: #fff;
             box-shadow: 0 0 0 1px rgba(255,255,255,0.05);
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
         }
         .tc-row {
             display: flex;
@@ -193,7 +157,7 @@
             padding: 10px 8px;
             border-radius: 8px;
             margin-bottom: 8px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+            background: rgba(255,255,255,0.01);
             border: 1px solid rgba(255,255,255,0.02);
             flex-wrap: wrap;
         }
@@ -201,10 +165,7 @@
             width: 110px;
             min-width: 110px;
         }
-        .tc-date div:first-child {
-            font-weight: 700;
-            color: #fff;
-        }
+        .tc-date div:first-child { font-weight: 700; color: #fff; }
         .tc-inputs {
             display: flex;
             gap: 8px;
@@ -219,36 +180,16 @@
             align-items: center;
             gap: 6px;
         }
-        .input-group label {
-            font-size: 13px;
-            white-space: nowrap;
-        }
-        .tc-select {
+        .tc-select, .input-num {
             background: #0b0b0c;
             border: 1px solid #1a1a1b;
             color: #fff;
             padding: 8px;
             border-radius: 8px;
-            min-width: 72px;
-            text-align: right;
             font-size: 13px;
         }
-        .input-num {
-            background: #0b0b0c;
-            border: 1px solid #1a1a1b;
-            padding: 8px;
-            border-radius: 8px;
-            color: #fff;
-            width: 100px;
-            text-align: right;
-            font-size: 13px;
-        }
-        .row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-        }
+        .tc-select { min-width: 72px; text-align: right; }
+        .input-num { width: 100px; text-align: right; }
         .cal-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -263,13 +204,10 @@
             cursor: pointer;
             font-size: 13px;
             border: 1px solid rgba(255,255,255,0.02);
-            transition: background 0.2s;
             display: flex;
             flex-direction: column;
         }
-        .cal-cell:hover {
-            background: #121214;
-        }
+        .cal-cell:hover { background: #121214; }
         .cal-cell.header {
             opacity: 0.6;
             font-weight: 700;
@@ -279,31 +217,16 @@
             background: transparent;
             border: none;
         }
-        .cal-cell .num {
-            font-weight: 700;
-            color: #fff;
-        }
-        .cal-cell .gross {
-            font-size: 0.8rem;
-            color: var(--muted);
-            margin-top: 4px;
-        }
-        .cal-tags {
-            margin-top: 6px;
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
+        .cal-cell .num { font-weight: 700; color: #fff; }
+        .cal-cell .gross { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+        .cal-tags { margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
         .cal-tag {
             padding: 2px 6px;
             border-radius: 4px;
             font-size: 11px;
             background: #2b2b2c;
         }
-        .cal-tag.coverage {
-            background: #1b2b1b;
-            color: var(--success);
-        }
+        .cal-tag.coverage { background: #1b2b1b; color: var(--success); }
         .math-line {
             display: flex;
             justify-content: space-between;
@@ -312,10 +235,12 @@
             font-size: 13px;
             color: #fff;
         }
-        .math-line.total {
-            font-weight: 700;
-            border-bottom: none;
-            color: #fff;
+        .math-line.total { font-weight: 700; border-bottom: none; }
+        .deduction-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 0;
         }
         .bottom-tabs {
             position: fixed;
@@ -327,10 +252,8 @@
             justify-content: space-around;
             align-items: center;
             background: linear-gradient(180deg, rgba(6,6,7,0.85), rgba(6,6,7,0.98));
-            padding: 4px calc(env(safe-area-inset-left) + 4px) calc(env(safe-area-inset-bottom) + 4px) calc(env(safe-area-inset-right) + 4px);
             z-index: 50;
             border-top: 1px solid rgba(255,255,255,0.06);
-            backdrop-filter: blur(12px);
         }
         .tab-btn {
             display: flex;
@@ -344,12 +267,8 @@
             cursor: pointer;
             transition: color 0.2s;
         }
-        .tab-btn:hover {
-            color: #fff;
-        }
-        .tab-btn.active {
-            color: #fff;
-        }
+        .tab-btn:hover { color: #fff; }
+        .tab-btn.active { color: #fff; }
         .fab {
             position: fixed;
             right: 16px;
@@ -361,31 +280,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
             z-index: 60;
             cursor: pointer;
             border: none;
-            transition: transform 0.2s;
         }
-        .fab:hover {
-            transform: scale(1.05);
-        }
-        .fab svg {
-            width: 22px;
-            height: 22px;
-            fill: #02120f;
-        }
+        .fab svg { width: 22px; height: 22px; fill: #02120f; }
         .sidebar {
             position: fixed;
             left: 0;
             top: 0;
             bottom: 0;
             width: 320px;
-            max-width: 85%;
             transform: translateX(-110%);
             transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
             z-index: 70;
-            padding: calc(env(safe-area-inset-top) + 12px) 12px 12px;
+            padding: 12px;
             background: #050506;
             border-right: 1px solid rgba(255,255,255,0.06);
             display: flex;
@@ -393,9 +302,7 @@
             gap: var(--gap);
             overflow-y: auto;
         }
-        .sidebar.open {
-            transform: translateX(0);
-        }
+        .sidebar.open { transform: translateX(0); }
         .sidebar-backdrop {
             position: fixed;
             inset: 0;
@@ -405,10 +312,7 @@
             z-index: 65;
             pointer-events: none;
         }
-        .sidebar-backdrop.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .sidebar-backdrop.show { opacity: 1; pointer-events: auto; }
         .sheet {
             position: fixed;
             left: 0;
@@ -417,201 +321,262 @@
             background: linear-gradient(180deg, #0f0f10, #0b0b0c);
             border-top-left-radius: 16px;
             border-top-right-radius: 16px;
-            padding: 16px 16px calc(env(safe-area-inset-bottom) + 16px);
+            padding: 16px;
             transform: translateY(110%);
             transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
             z-index: 80;
             max-height: 92%;
             overflow: auto;
             border-top: 1px solid rgba(255,255,255,0.08);
-            display: none;
         }
-        .sheet.open {
-            transform: translateY(0);
-            display: block;
-        }
-        .deduction-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 6px 0;
-        }
-        .deduction-item .input-num {
-            width: auto;
-            flex: 0 0 120px;
-        }
-        h3 {
-            margin: 0 0 12px 0;
-            font-size: 1rem;
-            color: #fff;
-        }
-        h4 {
-            margin: 0 0 8px 0;
-            font-size: 0.95rem;
-            color: #fff;
-        }
-        input[type="checkbox"] {
-            cursor: pointer;
-        }
-        @media(min-width:900px) {
-            .app {
-                padding: 24px;
-            }
-            .sidebar {
-                width: 360px;
-            }
-        }
+        .sheet.open { transform: translateY(0); }
+        h3 { margin: 0 0 12px 0; font-size: 1rem; color: #fff; }
+        h4 { margin: 0 0 8px 0; color: #fff; }
+        [x-cloak] { display: none; }
     </style>
 </head>
 <body>
-    <div class="app">
+    <div class="app" x-data="payrollApp()" x-cloak>
         <div class="summary-bar card">
             <div class="summary-left">
                 <div class="month-nav">
-                    <div class="month-label" id="monthLabel">June 2026</div>
-                    <button class="nav-btn" id="prevMonthBtn">◀</button>
-                    <button class="nav-btn" id="nextMonthBtn">▶</button>
+                    <div class="month-label" x-text="monthLabel"></div>
+                    <button class="nav-btn" @click="prevMonth()">◀</button>
+                    <button class="nav-btn" @click="nextMonth()">▶</button>
                 </div>
                 <div class="summary-kpis">
                     <div class="kpi">
                         <small>Projected Gross</small>
-                        <b id="displayGross">$0.00</b>
+                        <b x-text="'$' + payroll.earnings.toFixed(2)"></b>
                     </div>
                     <div class="kpi">
                         <small>Est Net Pay</small>
-                        <b style="color:var(--success)" id="displayNet">$0.00</b>
+                        <b style="color:var(--success)" x-text="'$' + payroll.net.toFixed(2)"></b>
                     </div>
                     <div class="kpi">
                         <small>Planned Leave</small>
-                        <b style="color:var(--accent)" id="displayLeave">0h</b>
+                        <b style="color:var(--accent)" x-text="leaveHours + 'h'"></b>
                     </div>
                 </div>
             </div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-                <div class="pill small">
-                    Pay Period: <span id="periodLabel">—</span>
-                </div>
+                <div class="pill small" x-text="'Pay Period: ' + periodLabel"></div>
                 <div style="display:flex;gap:8px">
-                    <button class="ghost" id="recomputeBtn">Recompute</button>
-                    <button class="save-btn" id="exportBtn">Preview Export</button>
+                    <button class="ghost" @click="calculatePayroll()">Recompute</button>
+                    <button class="save-btn">Preview Export</button>
                 </div>
             </div>
         </div>
 
         <div class="card">
             <div class="tabs">
-                <div class="tab active" data-tab="time">Timecard</div>
-                <div class="tab" data-tab="calendar">Calendar</div>
-                <div class="tab" data-tab="deductions">Deductions</div>
-                <div class="tab" data-tab="tax">Taxes</div>
-                <div class="tab" data-tab="debug">Debug</div>
+                <div class="tab" :class="tab === 'time' && 'active'" @click="tab = 'time'">Timecard</div>
+                <div class="tab" :class="tab === 'calendar' && 'active'" @click="tab = 'calendar'">Calendar</div>
+                <div class="tab" :class="tab === 'deductions' && 'active'" @click="tab = 'deductions'">Deductions</div>
+                <div class="tab" :class="tab === 'tax' && 'active'" @click="tab = 'tax'">Taxes</div>
+                <div class="tab" :class="tab === 'debug' && 'active'" @click="tab = 'debug'">Debug</div>
             </div>
 
-            <div id="time" class="tab-content active">
-                <div id="timecardContainer"></div>
-                <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-                    <button class="ghost" id="autoFillBtn">Auto Fill From Calendar</button>
-                    <button class="ghost" id="clearTimecardBtn">Clear Timecard</button>
-                    <div style="flex:1"></div>
-                    <button class="save-btn" id="saveTimecardBtn">Save & Recompute</button>
-                </div>
-            </div>
-
-            <div id="calendar" class="tab-content">
-                <div class="cal-grid" id="calendarGrid"></div>
-            </div>
-
-            <div id="deductions" class="tab-content">
-                <div class="card">
-                    <h3>Pre-Tax Deductions</h3>
-                    <div id="preTaxContainer"></div>
-                    <div class="row" style="margin-top:12px; border-top:1px dashed rgba(255,255,255,0.08); padding-top:8px;">
-                        <div class="muted small">Total Pre-Tax</div>
-                        <div style="color:var(--danger); font-weight:700;" id="preTaxTotal">$0.00</div>
-                    </div>
-                </div>
-                <div class="card" style="margin-top:12px">
-                    <h3>Post-Tax Deductions</h3>
-                    <div id="postTaxContainer"></div>
-                    <div class="row" style="margin-top:12px; border-top:1px dashed rgba(255,255,255,0.08); padding-top:8px;">
-                        <div class="muted small">Total Post-Tax</div>
-                        <div style="color:var(--danger); font-weight:700;" id="postTaxTotal">$0.00</div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tax" class="tab-content">
-                <div class="card">
-                    <div class="row">
-                        <div>
-                            <b>Federal Withholding</b>
-                            <div class="muted small">Simple 8.2% baseline toggle</div>
+            <template x-if="tab === 'time'">
+                <div>
+                    <template x-for="(day, idx) in timecardDays" :key="day.iso">
+                        <div class="tc-row">
+                            <div class="tc-date">
+                                <div x-text="day.label + ' ' + day.dateShort"></div>
+                                <div class="muted small" x-text="day.isDefaultWorkDay ? 'Scheduled Shift' : 'Off'"></div>
+                            </div>
+                            <div class="tc-inputs">
+                                <template x-if="day.label !== 'Sun'">
+                                    <div class="input-group">
+                                        <input type="checkbox" x-model="day.eptoChecked" @change="calculatePayroll()" />
+                                        <label class="small muted">EPTO</label>
+                                    </div>
+                                </template>
+                                <template x-if="day.label !== 'Sun'">
+                                    <div class="input-group">
+                                        <label class="small muted">Reg</label>
+                                        <select class="tc-select" x-model.number="day.reg" @change="calculatePayroll()">
+                                            <template x-for="h in [0,4,6,8,10,12]">
+                                                <option :value="h" x-text="h"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                </template>
+                                <template x-if="day.label !== 'Sun'">
+                                    <div class="input-group">
+                                        <label class="small muted" style="color:var(--danger)">OT</label>
+                                        <select class="tc-select" style="color:var(--danger)" x-model.number="day.ot" @change="calculatePayroll()">
+                                            <template x-for="h in [0,2,4,6,8]">
+                                                <option :value="h" x-text="h"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                </template>
+                                <template x-if="day.label === 'Sun'">
+                                    <div class="input-group">
+                                        <label class="small muted" style="color:var(--accent)">DT</label>
+                                        <select class="tc-select" style="color:var(--accent)" x-model.number="day.dt" @change="calculatePayroll()">
+                                            <template x-for="h in [0,2,4,6,8,10]">
+                                                <option :value="h" x-text="h"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
-                        <input type="checkbox" id="fedWithholdingToggle" checked>
+                    </template>
+                    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+                        <button class="ghost" @click="autoFillFromCalendar()">Auto Fill From Calendar</button>
+                        <button class="ghost" @click="clearTimecard()">Clear Timecard</button>
+                        <div style="flex:1"></div>
+                        <button class="save-btn" @click="calculatePayroll()">Save & Recompute</button>
                     </div>
                 </div>
-                <div class="card" style="margin-top:12px">
-                    <h3>Tax Rolldown</h3>
-                    <div class="math-line">
-                        <span>Taxable Gross</span><span id="taxableDisplay">$0.00</span>
-                    </div>
-                    <div class="math-line">
-                        <span>Federal Withholding</span><span id="fedTaxDisplay">$0.00</span>
-                    </div>
-                    <div class="math-line">
-                        <span>Social Security (6.2%)</span><span id="ssTaxDisplay">$0.00</span>
-                    </div>
-                    <div class="math-line">
-                        <span>Medicare (1.45%)</span><span id="medTaxDisplay">$0.00</span>
-                    </div>
-                    <div class="math-line">
-                        <span>GA State Tax (4.99%)</span><span id="stateTaxDisplay">$0.00</span>
-                    </div>
-                    <div class="math-line total">
-                        <span>Total Taxes</span><span id="totalTaxesDisplay">$0.00</span>
-                    </div>
-                </div>
-            </div>
+            </template>
 
-            <div id="debug" class="tab-content">
+            <template x-if="tab === 'calendar'">
+                <div class="cal-grid">
+                    <template x-for="day in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']">
+                        <div class="cal-cell header" x-text="day"></div>
+                    </template>
+                    <template x-for="blank in calendarBlanks">
+                        <div class="cal-cell" style="background:transparent;border:none;"></div>
+                    </template>
+                    <template x-for="day in calendarDays">
+                        <div class="cal-cell" @click="openDaySheet(day)">
+                            <div style="display:flex;justify-content:space-between;align-items:center">
+                                <div class="num" x-text="day.dayNum"></div>
+                                <div class="gross" x-text="'$' + day.estGross.toFixed(0)"></div>
+                            </div>
+                            <div class="cal-tags">
+                                <template x-if="day.leaveType">
+                                    <div class="cal-tag" x-text="day.leaveType"></div>
+                                </template>
+                                <template x-if="day.shiftCoverage">
+                                    <div class="cal-tag coverage">Cov</div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <template x-if="tab === 'deductions'">
+                <div>
+                    <div class="card">
+                        <h3>Pre-Tax Deductions</h3>
+                        <template x-for="(label, key) in { med: 'Medical Plan Premium', dental: 'Dental Premium', k401: 'Pre-Tax 401(k)' }">
+                            <div class="deduction-item">
+                                <div x-text="label"></div>
+                                <div style="display:flex;align-items:center;gap:6px">
+                                    <span class="muted small">$</span>
+                                    <input class="input-num" type="number" step="0.01" x-model.number="preTax[key]" @change="calculatePayroll()" />
+                                </div>
+                            </div>
+                        </template>
+                        <div class="deduction-item" style="margin-top:12px; border-top:1px dashed rgba(255,255,255,0.08); padding-top:8px;">
+                            <div class="muted small">Total Pre-Tax</div>
+                            <div style="color:var(--danger); font-weight:700;" x-text="'$' + preTaxTotal.toFixed(2)"></div>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top:12px">
+                        <h3>Post-Tax Deductions</h3>
+                        <template x-for="(label, key) in { roth: 'Roth 401(k) Contribution' }">
+                            <div class="deduction-item">
+                                <div x-text="label"></div>
+                                <div style="display:flex;align-items:center;gap:6px">
+                                    <span class="muted small">$</span>
+                                    <input class="input-num" type="number" step="0.01" x-model.number="postTax[key]" @change="calculatePayroll()" />
+                                </div>
+                            </div>
+                        </template>
+                        <div class="deduction-item" style="margin-top:12px; border-top:1px dashed rgba(255,255,255,0.08); padding-top:8px;">
+                            <div class="muted small">Total Post-Tax</div>
+                            <div style="color:var(--danger); font-weight:700;" x-text="'$' + postTaxTotal.toFixed(2)"></div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="tab === 'tax'">
+                <div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                            <div>
+                                <b>Federal Withholding</b>
+                                <div class="muted small">Simple 8.2% baseline toggle</div>
+                            </div>
+                            <input type="checkbox" x-model="enableFedWithholding" @change="calculatePayroll()" />
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top:12px">
+                        <h3>Tax Rolldown</h3>
+                        <div class="math-line">
+                            <span>Taxable Gross</span>
+                            <span x-text="'$' + payroll.taxableGross.toFixed(2)"></span>
+                        </div>
+                        <div class="math-line">
+                            <span>Federal Withholding</span>
+                            <span x-text="'$' + payroll.taxes.federal.toFixed(2)"></span>
+                        </div>
+                        <div class="math-line">
+                            <span>Social Security (6.2%)</span>
+                            <span x-text="'$' + payroll.taxes.ss.toFixed(2)"></span>
+                        </div>
+                        <div class="math-line">
+                            <span>Medicare (1.45%)</span>
+                            <span x-text="'$' + payroll.taxes.med.toFixed(2)"></span>
+                        </div>
+                        <div class="math-line">
+                            <span>GA State Tax (4.99%)</span>
+                            <span x-text="'$' + payroll.taxes.state.toFixed(2)"></span>
+                        </div>
+                        <div class="math-line total">
+                            <span>Total Taxes</span>
+                            <span x-text="'$' + payroll.taxesTotal.toFixed(2)"></span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="tab === 'debug'">
                 <div class="card">
                     <h3>Engine Architecture State</h3>
-                    <pre id="debugDump" style="white-space:pre-wrap;font-family:monospace;font-size:11px; background:#050506; padding:8px; border-radius:6px; color:#a2b6cb; margin: 0;max-height: 400px; overflow: auto;"></pre>
+                    <pre style="white-space:pre-wrap;font-family:monospace;font-size:11px; background:#050506; padding:8px; border-radius:6px; color:#a2b6cb; margin: 0;max-height: 400px; overflow: auto;" x-text="JSON.stringify({timecardDays, preTax, postTax, baseRate, incentiveAmt, scheduledLeaveLog}, null, 2)"></pre>
                 </div>
-            </div>
+            </template>
         </div>
 
-        <button class="fab" id="sidebarToggle">
+        <button class="fab" @click="sidebarOpen = !sidebarOpen">
             <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /></svg>
         </button>
 
-        <div class="sidebar" id="sidebar">
+        <div class="sidebar" :class="sidebarOpen && 'open'">
             <div class="card">
-                <div class="row">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
                     <div>
                         <b>Pay Period Navigator</b>
                         <div class="muted small">Shift tracking target windows</div>
                     </div>
-                    <button class="ghost" id="closeSidebarBtn">Close</button>
+                    <button class="ghost" @click="sidebarOpen = false">Close</button>
                 </div>
                 <div style="margin-top:12px">
-                    <div class="row">
+                    <div style="margin-bottom:12px">
                         <div class="muted small">Active Frame</div>
-                        <div><b id="sidebarPeriod">—</b></div>
+                        <div><b x-text="periodLabel"></b></div>
                     </div>
-                    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-                        <input type="date" class="input-num" style="width:140px; text-align:left;" id="startDateInput">
-                        <button class="ghost" id="applyStartBtn">Apply</button>
+                    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                        <input type="date" class="input-num" style="width:140px" x-model="startDateInput" />
+                        <button class="ghost" @click="applyStart()">Apply</button>
                     </div>
-                    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
-                        <button class="ghost" style="font-size:12px; padding:6px 10px;" id="startOfMonthBtn">Start of Month</button>
-                        <button class="ghost" style="font-size:12px; padding:6px 10px;" id="prevPeriodBtn">Prev Period</button>
-                        <button class="ghost" style="font-size:12px; padding:6px 10px;" id="todayBtn">Today</button>
+                    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+                        <button class="ghost" style="font-size:12px;padding:6px 10px" @click="setToThisMonth()">Start of Month</button>
+                        <button class="ghost" style="font-size:12px;padding:6px 10px" @click="setToPrevPeriod()">Prev Period</button>
+                        <button class="ghost" style="font-size:12px;padding:6px 10px" @click="setToToday()">Today</button>
                     </div>
-                    <div style="display:flex;gap:8px;margin-top:12px">
-                        <button class="save-btn" style="flex:1;" id="navPrevBtn">◀ Prev</button>
-                        <button class="save-btn" style="flex:1;" id="navNextBtn">Next ▶</button>
-                        <button class="ghost" id="syncBtn">Sync</button>
+                    <div style="display:flex;gap:8px">
+                        <button class="save-btn" style="flex:1" @click="navPrev()">◀ Prev</button>
+                        <button class="save-btn" style="flex:1" @click="navNext()">Next ▶</button>
                     </div>
                 </div>
             </div>
@@ -619,204 +584,75 @@
                 <h4>Wage Rules Configuration</h4>
                 <div style="display:flex;flex-direction:column;gap:8px">
                     <label class="small muted">Base Hourly Rate ($)</label>
-                    <input class="input-num" style="width:100%; text-align:left;" type="number" step="0.01" id="baseRateInput" value="41.64" />
+                    <input class="input-num" style="width:100%; text-align:left;" type="number" step="0.01" x-model.number="baseRate" @change="calculatePayroll()" />
                     <label class="small muted">Incentive / Bonus Pay Out ($)</label>
-                    <input class="input-num" style="width:100%; text-align:left;" type="number" step="0.01" id="incentiveInput" value="0" />
+                    <input class="input-num" style="width:100%; text-align:left;" type="number" step="0.01" x-model.number="incentiveAmt" @change="calculatePayroll()" />
                 </div>
             </div>
             <div class="card">
                 <h4>Sandbox Persistence</h4>
                 <div style="display:flex;gap:8px;flex-wrap:wrap">
-                    <button class="ghost" style="flex:1;" id="saveStateBtn">Save State</button>
-                    <button class="ghost" style="flex:1;" id="loadStateBtn">Load State</button>
-                    <button class="ghost" id="clearStateBtn">Clear</button>
+                    <button class="ghost" style="flex:1" @click="saveState()">Save State</button>
+                    <button class="ghost" style="flex:1" @click="loadState()">Load State</button>
+                    <button class="ghost" @click="clearPersistedState()">Clear</button>
                 </div>
             </div>
         </div>
-        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+        <div class="sidebar-backdrop" :class="sidebarOpen && 'show'" @click="sidebarOpen = false"></div>
 
-        <div class="sheet" id="daySheet">
-            <div class="row">
+        <div class="sheet" :class="sheetOpen && 'open'">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
                 <div>
-                    <h3 id="daySheetTitle" style="margin:0">—</h3>
-                    <div class="muted small" id="daySheetDay"></div>
+                    <h3 x-text="selectedDay?.dateShort + ' — Configuration Block'" style="margin:0"></h3>
+                    <div class="muted small" x-text="selectedDay?.label"></div>
                 </div>
-                <button class="ghost" id="closeSheetBtn">Close</button>
+                <button class="ghost" @click="sheetOpen = false">Close</button>
             </div>
             <div style="margin-top:16px">
                 <label class="small muted" style="display:block; margin-bottom:6px;">Leave Allocation Type</label>
-                <select class="input-num" style="width:100%; text-align:left;" id="leaveTypeSelect">
+                <select class="input-num" style="width:100%; text-align:left;" x-model="selectedDayLeaveType">
                     <option value="">No Time-Off Planned</option>
                     <option value="Regular PTO">Regular PTO</option>
                     <option value="Emergency PTO">Emergency PTO</option>
                     <option value="Holiday Leave Taken">Holiday Leave Taken</option>
                 </select>
-                <div style="margin-top:16px" id="coverageSection" style="display:none">
-                    <label class="small muted">Weekend System Coverage</label>
-                    <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
-                        <input type="checkbox" id="coverageToggle" />
-                        <label for="coverageToggle" class="small muted" id="coverageLabel">No Coverage</label>
+                <template x-if="selectedDay && !selectedDay.isDefaultWorkDay">
+                    <div style="margin-top:16px">
+                        <label class="small muted">Weekend System Coverage</label>
+                        <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+                            <input type="checkbox" x-model="selectedDayCoverage" id="cov" />
+                            <label for="cov" class="small muted" x-text="selectedDayCoverage ? 'Active Coverage (1.5x Premium Overtime Factor)' : 'No Coverage'"></label>
+                        </div>
                     </div>
-                </div>
+                </template>
                 <div style="margin-top:20px;display:flex;gap:8px;justify-content:flex-end">
-                    <button class="ghost" id="cancelDayBtn">Cancel</button>
-                    <button class="save-btn" id="commitDayBtn">Commit Rules</button>
+                    <button class="ghost" @click="sheetOpen = false">Cancel</button>
+                    <button class="save-btn" @click="commitDay()">Commit Rules</button>
                 </div>
             </div>
         </div>
 
         <div class="bottom-tabs">
-            <div class="tab-btn active" data-tab="time">
+            <div class="tab-btn" :class="tab === 'time' && 'active'" @click="tab = 'time'">
                 <span>⏱</span><span>Time</span>
             </div>
-            <div class="tab-btn" data-tab="calendar">
+            <div class="tab-btn" :class="tab === 'calendar' && 'active'" @click="tab = 'calendar'">
                 <span>📅</span><span>Cal</span>
             </div>
-            <div class="tab-btn" data-tab="deductions">
+            <div class="tab-btn" :class="tab === 'deductions' && 'active'" @click="tab = 'deductions'">
                 <span>➖</span><span>Deduct</span>
             </div>
-            <div class="tab-btn" data-tab="tax">
+            <div class="tab-btn" :class="tab === 'tax' && 'active'" @click="tab = 'tax'">
                 <span>💸</span><span>Tax</span>
             </div>
-            <div class="tab-btn" data-tab="debug">
+            <div class="tab-btn" :class="tab === 'debug' && 'active'" @click="tab = 'debug'">
                 <span>🛠</span><span>Debug</span>
             </div>
         </div>
     </div>
 
     <script>
-        // Financial Command Engine - Vanilla JS
-        const engine = (() => {
-            const deductionLabels = {
-                preTax: { med: 'Medical Plan Premium', dental: 'Dental Premium', k401: 'Pre-Tax 401(k)' },
-                postTax: { roth: 'Roth 401(k) Contribution' }
-            };
-
-            const state = {
-                baseRate: 41.64,
-                incentiveAmt: 0,
-                preTax: { med: 0, dental: 0, k401: 0 },
-                postTax: { roth: 0 },
-                currentYear: new Date().getFullYear(),
-                currentMonth: new Date().getMonth(),
-                scheduledLeaveLog: [],
-                timecardDays: [],
-                enableFedWithholding: true,
-                baseDailyRate: 333.12
-            };
-
-            const buildTimecard = (startDate) => {
-                state.timecardDays = [];
-                for (let i = 0; i < 14; i++) {
-                    const d = new Date(startDate);
-                    d.setDate(startDate.getDate() + i);
-                    const iso = toISO(d);
-                    const label = d.toLocaleString('en-US', { weekday: 'short' });
-                    const dateShort = d.toLocaleString('en-US', { month: 'numeric', day: 'numeric' });
-                    const isDefaultWorkDay = !['Sat', 'Sun'].includes(label);
-                    state.timecardDays.push({
-                        iso, date: d, label, dateShort, isDefaultWorkDay, reg: isDefaultWorkDay ? 12 : 0, ot: 0, dt: 0, eptoChecked: false
-                    });
-                }
-            };
-
-            const getCalendarDays = () => {
-                const year = state.currentYear;
-                const month = state.currentMonth;
-                const first = new Date(year, month, 1);
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                const startBlankCount = first.getDay();
-                const today = new Date();
-                const days = [];
-
-                for (let d = 1; d <= daysInMonth; d++) {
-                    const date = new Date(year, month, d);
-                    const iso = toISO(date);
-                    const log = state.scheduledLeaveLog.find(l => l.date === iso);
-                    const isDefaultWorkDay = [1, 2, 3, 4, 5].includes(date.getDay());
-                    const leaveType = log?.leaveType || '';
-                    const shiftCoverage = !!log?.shiftCoverage;
-                    let payMultiplier = isDefaultWorkDay ? 1 : 0;
-                    if (leaveType) payMultiplier = 1;
-                    if (shiftCoverage) payMultiplier *= 1.5;
-                    const estGross = state.baseDailyRate * payMultiplier;
-
-                    days.push({
-                        iso, date, dayNum: d, isDefaultWorkDay,
-                        isToday: date.toDateString() === today.toDateString(),
-                        leaveType, shiftCoverage, estGross
-                    });
-                }
-
-                return { blanks: Array(startBlankCount).fill(0), days };
-            };
-
-            const calculatePayroll = () => {
-                const days = state.timecardDays;
-                const baseRate = state.baseRate;
-                const incentiveAmt = state.incentiveAmt;
-                let w1Reg = 0, w1OT = 0, w2Reg = 0, w2OT = 0, dtHrs = 0;
-                let w1CumulativeReg = 0, w2CumulativeReg = 0;
-
-                days.forEach((d, i) => {
-                    const inputReg = Number(d.reg || 0);
-                    const inputOt = Number(d.ot || 0);
-                    const inputDt = Number(d.dt || 0);
-
-                    if (d.label === 'Sun') {
-                        dtHrs += inputDt;
-                    } else if (i < 7) {
-                        const allowed = Math.max(0, 40 - w1CumulativeReg);
-                        if (w1CumulativeReg + inputReg > 40) {
-                            w1Reg += allowed;
-                            w1OT += (inputReg - allowed) + inputOt;
-                            w1CumulativeReg += allowed;
-                        } else {
-                            w1Reg += inputReg;
-                            w1OT += inputOt;
-                            w1CumulativeReg += inputReg;
-                        }
-                    } else {
-                        const allowed = Math.max(0, 40 - w2CumulativeReg);
-                        if (w2CumulativeReg + inputReg > 40) {
-                            w2Reg += allowed;
-                            w2OT += (inputReg - allowed) + inputOt;
-                            w2CumulativeReg += allowed;
-                        } else {
-                            w2Reg += inputReg;
-                            w2OT += inputOt;
-                            w2CumulativeReg += inputReg;
-                        }
-                    }
-                });
-
-                const w1GrossNoOT = w1Reg * baseRate;
-                const w2GrossNoOT = w2Reg * baseRate;
-                const w1OTPay = w1OT * (baseRate * 1.5);
-                const w2RegGross = w2GrossNoOT + incentiveAmt;
-                const totalW2ActiveHours = w2Reg + w2OT;
-                const w2OTRate = totalW2ActiveHours > 0 ? (w2RegGross / totalW2ActiveHours) * 1.5 : baseRate * 1.5;
-                const w2OTPay = w2OT * w2OTRate;
-                const dtPay = dtHrs * baseRate * 2.0;
-
-                const earnings = w1GrossNoOT + w2GrossNoOT + w1OTPay + w2OTPay + dtPay + incentiveAmt;
-                const preTaxTotal = Object.values(state.preTax).reduce((a, b) => a + Number(b), 0);
-                const postTaxTotal = Object.values(state.postTax).reduce((a, b) => a + Number(b), 0);
-                const taxableGross = Math.max(0, earnings - preTaxTotal);
-
-                const taxes = {
-                    ss: taxableGross * 0.062,
-                    med: taxableGross * 0.0145,
-                    state: taxableGross * 0.0499,
-                    federal: state.enableFedWithholding ? taxableGross * 0.082 : 0
-                };
-
-                const taxesTotal = taxes.ss + taxes.med + taxes.state + taxes.federal;
-                const net = Math.max(0, earnings - preTaxTotal - taxesTotal - postTaxTotal);
-
-                return { earnings, preTaxTotal, postTaxTotal, taxableGross, taxes, taxesTotal, net };
-            };
-
+        function payrollApp() {
             const toISO = (d) => {
                 try {
                     return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -826,426 +662,271 @@
             };
 
             return {
-                state,
-                getState: () => state,
-                buildTimecard,
-                getCalendarDays,
-                calculatePayroll,
-                updateDeduction: (type, key, value) => {
-                    if (type === 'pre') state.preTax[key] = Number(value);
-                    else state.postTax[key] = Number(value);
+                tab: 'time',
+                sidebarOpen: false,
+                sheetOpen: false,
+                selectedDay: null,
+                selectedDayLeaveType: '',
+                selectedDayCoverage: false,
+                startDateInput: new Date().toISOString().slice(0, 10),
+                
+                baseRate: 41.64,
+                incentiveAmt: 0,
+                enableFedWithholding: true,
+                
+                currentYear: new Date().getFullYear(),
+                currentMonth: new Date().getMonth(),
+                
+                preTax: { med: 0, dental: 0, k401: 0 },
+                postTax: { roth: 0 },
+                scheduledLeaveLog: [],
+                timecardDays: [],
+                
+                payroll: {
+                    earnings: 0,
+                    net: 0,
+                    taxableGross: 0,
+                    preTaxTotal: 0,
+                    postTaxTotal: 0,
+                    taxes: { federal: 0, ss: 0, med: 0, state: 0 },
+                    taxesTotal: 0
                 },
-                updateLeaveLog: (iso, leaveType, shiftCoverage) => {
-                    state.scheduledLeaveLog = state.scheduledLeaveLog.filter(l => l.date !== iso);
-                    if (leaveType || shiftCoverage) {
-                        state.scheduledLeaveLog.push({ date: iso, leaveType, shiftCoverage, hours: 12 });
+
+                get calendarBlanks() {
+                    const first = new Date(this.currentYear, this.currentMonth, 1);
+                    return Array(first.getDay()).fill(0);
+                },
+
+                get calendarDays() {
+                    const days = [];
+                    const daysInMonth = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+                    for (let d = 1; d <= daysInMonth; d++) {
+                        const date = new Date(this.currentYear, this.currentMonth, d);
+                        const iso = toISO(date);
+                        const log = this.scheduledLeaveLog.find(l => l.date === iso);
+                        const isDefaultWorkDay = [1, 2, 3, 4, 5].includes(date.getDay());
+                        const leaveType = log?.leaveType || '';
+                        const shiftCoverage = !!log?.shiftCoverage;
+                        let payMultiplier = isDefaultWorkDay ? 1 : 0;
+                        if (leaveType) payMultiplier = 1;
+                        if (shiftCoverage) payMultiplier *= 1.5;
+                        const estGross = 333.12 * payMultiplier;
+                        
+                        days.push({
+                            iso, date, dayNum: d, isDefaultWorkDay,
+                            leaveType, shiftCoverage, estGross
+                        });
+                    }
+                    return days;
+                },
+
+                get monthLabel() {
+                    return new Date(this.currentYear, this.currentMonth).toLocaleString(undefined, { month: 'long', year: 'numeric' });
+                },
+
+                get periodLabel() {
+                    if (!this.timecardDays.length) return '—';
+                    return this.timecardDays[0].dateShort + ' — ' + this.timecardDays[13]?.dateShort;
+                },
+
+                get leaveHours() {
+                    return this.calendarDays.reduce((sum, d) => d.leaveType ? sum + 12 : sum, 0);
+                },
+
+                get preTaxTotal() {
+                    return Object.values(this.preTax).reduce((a, b) => a + Number(b), 0);
+                },
+
+                get postTaxTotal() {
+                    return Object.values(this.postTax).reduce((a, b) => a + Number(b), 0);
+                },
+
+                init() {
+                    this.buildTimecard(new Date());
+                    this.calculatePayroll();
+                    const saved = localStorage.getItem('payroll_state_alpine');
+                    if (saved) {
+                        try {
+                            const data = JSON.parse(saved);
+                            Object.assign(this, data);
+                        } catch (e) {}
                     }
                 },
-                nextMonth: () => {
-                    state.currentMonth++;
-                    if (state.currentMonth > 11) { state.currentMonth = 0; state.currentYear++; }
-                },
-                prevMonth: () => {
-                    state.currentMonth--;
-                    if (state.currentMonth < 0) { state.currentMonth = 11; state.currentYear--; }
-                }
-            };
-        })();
 
-        // UI Controller
-        const ui = (() => {
-            let currentDay = null;
-
-            const render = () => {
-                renderTimecard();
-                renderCalendar();
-                renderDeductions();
-                renderPayroll();
-                renderDebug();
-                updateSummary();
-            };
-
-            const renderTimecard = () => {
-                const container = document.getElementById('timecardContainer');
-                container.innerHTML = engine.state.timecardDays.map((day, i) => `
-                    <div class="tc-row">
-                        <div class="tc-date">
-                            <div>${day.label} ${day.dateShort}</div>
-                            <div class="muted small">${day.isDefaultWorkDay ? 'Scheduled Shift' : 'Off'}</div>
-                        </div>
-                        <div class="tc-inputs">
-                            ${day.label !== 'Sun' ? `
-                                <div class="input-group">
-                                    <input type="checkbox" id="epto-${i}" data-epto="${i}" ${day.eptoChecked ? 'checked' : ''} />
-                                    <label for="epto-${i}" class="small muted">EPTO</label>
-                                </div>
-                            ` : ''}
-                            ${day.label !== 'Sun' ? `
-                                <div class="input-group">
-                                    <label class="small muted">Reg</label>
-                                    <select class="tc-select" data-tc-reg="${i}">
-                                        ${[0, 4, 6, 8, 10, 12].map(h => `<option value="${h}" ${day.reg === h ? 'selected' : ''}>${h}</option>`).join('')}
-                                    </select>
-                                </div>
-                            ` : ''}
-                            ${day.label !== 'Sun' ? `
-                                <div class="input-group">
-                                    <label class="small muted" style="color:var(--danger)">OT</label>
-                                    <select class="tc-select" style="color:var(--danger)" data-tc-ot="${i}">
-                                        ${[0, 2, 4, 6, 8].map(h => `<option value="${h}" ${day.ot === h ? 'selected' : ''}>${h}</option>`).join('')}
-                                    </select>
-                                </div>
-                            ` : ''}
-                            ${day.label === 'Sun' ? `
-                                <div class="input-group">
-                                    <label class="small muted" style="color:var(--accent)">DT</label>
-                                    <select class="tc-select" style="color:var(--accent)" data-tc-dt="${i}">
-                                        ${[0, 2, 4, 6, 8, 10].map(h => `<option value="${h}" ${day.dt === h ? 'selected' : ''}>${h}</option>`).join('')}
-                                    </select>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                `).join('');
-
-                // Add listeners
-                container.querySelectorAll('[data-tc-reg]').forEach(el => {
-                    el.addEventListener('change', (e) => {
-                        engine.state.timecardDays[parseInt(e.target.dataset.tcReg)].reg = Number(e.target.value);
-                        render();
-                    });
-                });
-                container.querySelectorAll('[data-tc-ot]').forEach(el => {
-                    el.addEventListener('change', (e) => {
-                        engine.state.timecardDays[parseInt(e.target.dataset.tcOt)].ot = Number(e.target.value);
-                        render();
-                    });
-                });
-                container.querySelectorAll('[data-tc-dt]').forEach(el => {
-                    el.addEventListener('change', (e) => {
-                        engine.state.timecardDays[parseInt(e.target.dataset.tcDt)].dt = Number(e.target.value);
-                        render();
-                    });
-                });
-                container.querySelectorAll('[data-epto]').forEach(el => {
-                    el.addEventListener('change', (e) => {
-                        const idx = parseInt(e.target.dataset.epto);
-                        const day = engine.state.timecardDays[idx];
-                        day.eptoChecked = e.target.checked;
-                        if (day.eptoChecked) {
-                            day.reg = 0;
-                            day.ot = 0;
-                        } else {
-                            day.reg = day.isDefaultWorkDay ? 12 : 0;
-                        }
-                        render();
-                    });
-                });
-            };
-
-            const renderCalendar = () => {
-                const { blanks, days } = engine.getCalendarDays();
-                const grid = document.getElementById('calendarGrid');
-                grid.innerHTML = '';
-
-                ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
-                    const cell = document.createElement('div');
-                    cell.className = 'cal-cell header';
-                    cell.textContent = day;
-                    grid.appendChild(cell);
-                });
-
-                blanks.forEach(() => {
-                    const cell = document.createElement('div');
-                    cell.className = 'cal-cell';
-                    cell.style.background = 'transparent';
-                    cell.style.border = 'none';
-                    grid.appendChild(cell);
-                });
-
-                days.forEach(day => {
-                    const cell = document.createElement('div');
-                    cell.className = 'cal-cell';
-                    cell.innerHTML = `
-                        <div style="display:flex;justify-content:space-between;align-items:center">
-                            <div class="num">${day.dayNum}</div>
-                            <div class="gross">$${day.estGross.toFixed(0)}</div>
-                        </div>
-                        <div class="cal-tags">
-                            ${day.leaveType ? `<div class="cal-tag">${day.leaveType}</div>` : ''}
-                            ${day.shiftCoverage ? `<div class="cal-tag coverage">Cov</div>` : ''}
-                        </div>
-                    `;
-                    cell.addEventListener('click', () => openDayModal(day));
-                    grid.appendChild(cell);
-                });
-            };
-
-            const renderDeductions = () => {
-                const renderGroup = (type, labels, containerId) => {
-                    const container = document.getElementById(containerId);
-                    container.innerHTML = Object.entries(labels).map(([key, label]) => `
-                        <div class="deduction-item">
-                            <div>${label}</div>
-                            <div style="display:flex;align-items:center;gap:6px">
-                                <span class="muted small">$</span>
-                                <input class="input-num" type="number" step="0.01" data-deduct-${type}="${key}" value="${engine.state[type === 'pre' ? 'preTax' : 'postTax'][key] || 0}" />
-                            </div>
-                        </div>
-                    `).join('');
-                    container.querySelectorAll(`[data-deduct-${type}]`).forEach(el => {
-                        el.addEventListener('input', (e) => {
-                            engine.updateDeduction(type, e.target.dataset[`deduct${type === 'pre' ? 'Pre' : 'Post'}`], e.target.value);
-                            render();
+                buildTimecard(startDate) {
+                    this.timecardDays = [];
+                    for (let i = 0; i < 14; i++) {
+                        const d = new Date(startDate);
+                        d.setDate(startDate.getDate() + i);
+                        const iso = toISO(d);
+                        const label = d.toLocaleString('en-US', { weekday: 'short' });
+                        const dateShort = d.toLocaleString('en-US', { month: 'numeric', day: 'numeric' });
+                        const isDefaultWorkDay = !['Sat', 'Sun'].includes(label);
+                        
+                        this.timecardDays.push({
+                            iso, date: d, label, dateShort, isDefaultWorkDay,
+                            reg: isDefaultWorkDay ? 12 : 0,
+                            ot: 0,
+                            dt: 0,
+                            eptoChecked: false
                         });
+                    }
+                },
+
+                calculatePayroll() {
+                    const days = this.timecardDays;
+                    let w1Reg = 0, w1OT = 0, w2Reg = 0, w2OT = 0, dtHrs = 0;
+                    let w1CumulativeReg = 0, w2CumulativeReg = 0;
+
+                    days.forEach((d, i) => {
+                        const inputReg = Number(d.reg || 0);
+                        const inputOt = Number(d.ot || 0);
+                        const inputDt = Number(d.dt || 0);
+
+                        if (d.label === 'Sun') {
+                            dtHrs += inputDt;
+                        } else if (i < 7) {
+                            const allowed = Math.max(0, 40 - w1CumulativeReg);
+                            if (w1CumulativeReg + inputReg > 40) {
+                                w1Reg += allowed;
+                                w1OT += (inputReg - allowed) + inputOt;
+                                w1CumulativeReg += allowed;
+                            } else {
+                                w1Reg += inputReg;
+                                w1OT += inputOt;
+                                w1CumulativeReg += inputReg;
+                            }
+                        } else {
+                            const allowed = Math.max(0, 40 - w2CumulativeReg);
+                            if (w2CumulativeReg + inputReg > 40) {
+                                w2Reg += allowed;
+                                w2OT += (inputReg - allowed) + inputOt;
+                                w2CumulativeReg += allowed;
+                            } else {
+                                w2Reg += inputReg;
+                                w2OT += inputOt;
+                                w2CumulativeReg += inputReg;
+                            }
+                        }
                     });
-                };
 
-                renderGroup('pre', { med: 'Medical Plan Premium', dental: 'Dental Premium', k401: 'Pre-Tax 401(k)' }, 'preTaxContainer');
-                renderGroup('post', { roth: 'Roth 401(k) Contribution' }, 'postTaxContainer');
-            };
+                    const w1GrossNoOT = w1Reg * this.baseRate;
+                    const w2GrossNoOT = w2Reg * this.baseRate;
+                    const w1OTPay = w1OT * (this.baseRate * 1.5);
+                    const w2RegGross = w2GrossNoOT + this.incentiveAmt;
+                    const totalW2ActiveHours = w2Reg + w2OT;
+                    const w2OTRate = totalW2ActiveHours > 0 ? (w2RegGross / totalW2ActiveHours) * 1.5 : this.baseRate * 1.5;
+                    const w2OTPay = w2OT * w2OTRate;
+                    const dtPay = dtHrs * this.baseRate * 2.0;
 
-            const renderPayroll = () => {
-                const result = engine.calculatePayroll();
-                document.getElementById('displayGross').textContent = '$' + result.earnings.toFixed(2);
-                document.getElementById('displayNet').textContent = '$' + result.net.toFixed(2);
-                document.getElementById('preTaxTotal').textContent = '$' + result.preTaxTotal.toFixed(2);
-                document.getElementById('postTaxTotal').textContent = '$' + result.postTaxTotal.toFixed(2);
-                document.getElementById('taxableDisplay').textContent = '$' + result.taxableGross.toFixed(2);
-                document.getElementById('fedTaxDisplay').textContent = '$' + result.taxes.federal.toFixed(2);
-                document.getElementById('ssTaxDisplay').textContent = '$' + result.taxes.ss.toFixed(2);
-                document.getElementById('medTaxDisplay').textContent = '$' + result.taxes.med.toFixed(2);
-                document.getElementById('stateTaxDisplay').textContent = '$' + result.taxes.state.toFixed(2);
-                document.getElementById('totalTaxesDisplay').textContent = '$' + result.taxesTotal.toFixed(2);
-            };
+                    const earnings = w1GrossNoOT + w2GrossNoOT + w1OTPay + w2OTPay + dtPay + this.incentiveAmt;
+                    const preTaxTotal = this.preTaxTotal;
+                    const postTaxTotal = this.postTaxTotal;
+                    const taxableGross = Math.max(0, earnings - preTaxTotal);
 
-            const renderDebug = () => {
-                document.getElementById('debugDump').textContent = JSON.stringify(engine.state, null, 2);
-            };
+                    const taxes = {
+                        ss: taxableGross * 0.062,
+                        med: taxableGross * 0.0145,
+                        state: taxableGross * 0.0499,
+                        federal: this.enableFedWithholding ? taxableGross * 0.082 : 0
+                    };
 
-            const updateSummary = () => {
-                const monthLabel = new Date(engine.state.currentYear, engine.state.currentMonth).toLocaleString(undefined, { month: 'long', year: 'numeric' });
-                document.getElementById('monthLabel').textContent = monthLabel;
-                
-                const days = engine.state.timecardDays;
-                if (days.length) {
-                    document.getElementById('periodLabel').textContent = days[0].dateShort + ' — ' + days[days.length - 1].dateShort;
-                    document.getElementById('sidebarPeriod').textContent = days[0].dateShort + ' — ' + days[days.length - 1].dateShort;
+                    const taxesTotal = taxes.ss + taxes.med + taxes.state + taxes.federal;
+                    const net = Math.max(0, earnings - preTaxTotal - taxesTotal - postTaxTotal);
+
+                    this.payroll = { earnings, net, taxableGross, preTaxTotal, postTaxTotal, taxes, taxesTotal };
+                },
+
+                autoFillFromCalendar() {
+                    this.timecardDays.forEach(td => {
+                        const calDay = this.calendarDays.find(d => d.iso === td.iso);
+                        td.reg = calDay && calDay.isDefaultWorkDay ? 12 : 0;
+                        td.ot = 0;
+                        td.dt = 0;
+                        td.eptoChecked = false;
+                    });
+                    this.calculatePayroll();
+                },
+
+                clearTimecard() {
+                    this.timecardDays.forEach(td => {
+                        td.reg = 0; td.ot = 0; td.dt = 0; td.eptoChecked = false;
+                    });
+                    this.calculatePayroll();
+                },
+
+                openDaySheet(day) {
+                    this.selectedDay = day;
+                    const log = this.scheduledLeaveLog.find(l => l.date === day.iso);
+                    this.selectedDayLeaveType = log?.leaveType || '';
+                    this.selectedDayCoverage = !!log?.shiftCoverage;
+                    this.sheetOpen = true;
+                },
+
+                commitDay() {
+                    if (!this.selectedDay) return;
+                    this.scheduledLeaveLog = this.scheduledLeaveLog.filter(l => l.date !== this.selectedDay.iso);
+                    if (this.selectedDayLeaveType || this.selectedDayCoverage) {
+                        this.scheduledLeaveLog.push({
+                            date: this.selectedDay.iso,
+                            leaveType: this.selectedDayLeaveType,
+                            shiftCoverage: this.selectedDayCoverage,
+                            hours: 12
+                        });
+                    }
+                    this.sheetOpen = false;
+                    this.selectedDay = null;
+                    this.calculatePayroll();
+                },
+
+                prevMonth() { this.currentMonth--; if (this.currentMonth < 0) { this.currentMonth = 11; this.currentYear--; } },
+                nextMonth() { this.currentMonth++; if (this.currentMonth > 11) { this.currentMonth = 0; this.currentYear++; } },
+
+                navPrev() { const d = new Date(this.timecardDays[0]?.date || new Date()); d.setDate(d.getDate() - 14); this.buildTimecard(d); this.calculatePayroll(); },
+                navNext() { const d = new Date(this.timecardDays[0]?.date || new Date()); d.setDate(d.getDate() + 14); this.buildTimecard(d); this.calculatePayroll(); },
+
+                applyStart() { if (this.startDateInput) { this.buildTimecard(new Date(this.startDateInput + 'T00:00:00')); this.calculatePayroll(); this.sidebarOpen = false; } },
+                setToThisMonth() { const d = new Date(); d.setDate(1); this.startDateInput = d.toISOString().slice(0, 10); },
+                setToToday() { this.startDateInput = new Date().toISOString().slice(0, 10); },
+                setToPrevPeriod() { const d = new Date(this.timecardDays[0]?.date || new Date()); d.setDate(d.getDate() - 14); this.startDateInput = d.toISOString().slice(0, 10); },
+
+                saveState() {
+                    localStorage.setItem('payroll_state_alpine', JSON.stringify({
+                        preTax: this.preTax,
+                        postTax: this.postTax,
+                        baseRate: this.baseRate,
+                        incentiveAmt: this.incentiveAmt,
+                        scheduledLeaveLog: this.scheduledLeaveLog
+                    }));
+                    alert('State Saved.');
+                },
+
+                loadState() {
+                    const saved = localStorage.getItem('payroll_state_alpine');
+                    if (!saved) return alert('No saved state found.');
+                    try {
+                        const data = JSON.parse(saved);
+                        this.preTax = data.preTax;
+                        this.postTax = data.postTax;
+                        this.baseRate = data.baseRate;
+                        this.incentiveAmt = data.incentiveAmt;
+                        this.scheduledLeaveLog = data.scheduledLeaveLog;
+                        this.calculatePayroll();
+                        alert('State Loaded.');
+                    } catch (e) { alert('Load failed.'); }
+                },
+
+                clearPersistedState() {
+                    if (confirm('Clear local system persistence frames?')) {
+                        localStorage.removeItem('payroll_state_alpine');
+                        alert('State Cleared.');
+                    }
                 }
-
-                const { days: calDays } = engine.getCalendarDays();
-                let leaveHours = 0;
-                calDays.forEach(d => {
-                    if (d.leaveType) leaveHours += 12;
-                });
-                document.getElementById('displayLeave').textContent = leaveHours + 'h';
             };
+        }
 
-            const openDayModal = (day) => {
-                currentDay = day;
-                const log = engine.state.scheduledLeaveLog.find(l => l.date === day.iso);
-                document.getElementById('daySheetTitle').textContent = day.dateShort + ' — Configuration Block';
-                document.getElementById('daySheetDay').textContent = day.label;
-                document.getElementById('leaveTypeSelect').value = log?.leaveType || '';
-                document.getElementById('coverageToggle').checked = !!log?.shiftCoverage;
-                document.getElementById('coverageSection').style.display = day.isDefaultWorkDay ? 'none' : 'block';
-                document.getElementById('daySheet').classList.add('open');
-            };
-
-            const closeDayModal = () => {
-                document.getElementById('daySheet').classList.remove('open');
-                currentDay = null;
-            };
-
-            const commitDay = () => {
-                if (!currentDay) return;
-                const leaveType = document.getElementById('leaveTypeSelect').value;
-                const shiftCoverage = document.getElementById('coverageToggle').checked;
-                engine.updateLeaveLog(currentDay.iso, leaveType, shiftCoverage);
-                closeDayModal();
-                render();
-            };
-
-            return { render, openDayModal, closeDayModal, commitDay, getCurrentDay: () => currentDay };
-        })();
-
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', () => {
-            const today = new Date();
-            engine.buildTimecard(today);
-            
-            // Tab switching
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', (e) => {
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    e.target.classList.add('active');
-                    const tabName = e.target.dataset.tab;
-                    document.getElementById(tabName).classList.add('active');
-                });
-            });
-
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    e.currentTarget.classList.add('active');
-                    const tabName = e.currentTarget.dataset.tab;
-                    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-                    document.getElementById(tabName).classList.add('active');
-                });
-            });
-
-            // Sidebar
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('sidebarBackdrop');
-            document.getElementById('sidebarToggle').addEventListener('click', () => {
-                sidebar.classList.toggle('open');
-                backdrop.classList.toggle('show');
-            });
-            document.getElementById('closeSidebarBtn').addEventListener('click', () => {
-                sidebar.classList.remove('open');
-                backdrop.classList.remove('show');
-            });
-            backdrop.addEventListener('click', () => {
-                sidebar.classList.remove('open');
-                backdrop.classList.remove('show');
-            });
-
-            // Base rate and incentive
-            document.getElementById('baseRateInput').addEventListener('change', (e) => {
-                engine.state.baseRate = Number(e.target.value);
-                ui.render();
-            });
-            document.getElementById('incentiveInput').addEventListener('change', (e) => {
-                engine.state.incentiveAmt = Number(e.target.value);
-                ui.render();
-            });
-
-            // Month navigation
-            document.getElementById('prevMonthBtn').addEventListener('click', () => {
-                engine.prevMonth();
-                ui.render();
-            });
-            document.getElementById('nextMonthBtn').addEventListener('click', () => {
-                engine.nextMonth();
-                ui.render();
-            });
-
-            // Federal withholding toggle
-            document.getElementById('fedWithholdingToggle').addEventListener('change', (e) => {
-                engine.state.enableFedWithholding = e.target.checked;
-                ui.render();
-            });
-
-            // Day modal
-            document.getElementById('closeSheetBtn').addEventListener('click', () => ui.closeDayModal());
-            document.getElementById('cancelDayBtn').addEventListener('click', () => ui.closeDayModal());
-            document.getElementById('commitDayBtn').addEventListener('click', () => ui.commitDay());
-            document.getElementById('coverageToggle').addEventListener('change', (e) => {
-                document.getElementById('coverageLabel').textContent = e.target.checked ? 'Active Coverage (1.5x Premium Overtime Factor)' : 'No Coverage';
-            });
-
-            // Timecard buttons
-            document.getElementById('recomputeBtn').addEventListener('click', () => ui.render());
-            document.getElementById('saveTimecardBtn').addEventListener('click', () => ui.render());
-            document.getElementById('autoFillBtn').addEventListener('click', () => {
-                engine.state.timecardDays.forEach(td => {
-                    const { days: calDays } = engine.getCalendarDays();
-                    const calDay = calDays.find(d => d.iso === td.iso);
-                    td.reg = calDay && calDay.isDefaultWorkDay ? 12 : 0;
-                    td.ot = 0;
-                    td.dt = 0;
-                    td.eptoChecked = false;
-                });
-                ui.render();
-            });
-            document.getElementById('clearTimecardBtn').addEventListener('click', () => {
-                engine.state.timecardDays.forEach(td => {
-                    td.reg = 0;
-                    td.ot = 0;
-                    td.dt = 0;
-                    td.eptoChecked = false;
-                });
-                ui.render();
-            });
-
-            // Period navigation
-            document.getElementById('navPrevBtn').addEventListener('click', () => {
-                const start = engine.state.timecardDays[0]?.date || new Date();
-                start.setDate(start.getDate() - 14);
-                engine.buildTimecard(start);
-                ui.render();
-            });
-            document.getElementById('navNextBtn').addEventListener('click', () => {
-                const start = engine.state.timecardDays[0]?.date || new Date();
-                start.setDate(start.getDate() + 14);
-                engine.buildTimecard(start);
-                ui.render();
-            });
-            document.getElementById('syncBtn').addEventListener('click', () => ui.render());
-
-            document.getElementById('applyStartBtn').addEventListener('click', () => {
-                const dateStr = document.getElementById('startDateInput').value;
-                if (dateStr) {
-                    engine.buildTimecard(new Date(dateStr + 'T00:00:00'));
-                    ui.render();
-                    sidebar.classList.remove('open');
-                    backdrop.classList.remove('show');
-                }
-            });
-            document.getElementById('startOfMonthBtn').addEventListener('click', () => {
-                const d = new Date();
-                d.setDate(1);
-                document.getElementById('startDateInput').value = d.toISOString().slice(0, 10);
-            });
-            document.getElementById('todayBtn').addEventListener('click', () => {
-                document.getElementById('startDateInput').value = new Date().toISOString().slice(0, 10);
-            });
-            document.getElementById('prevPeriodBtn').addEventListener('click', () => {
-                const cur = engine.state.timecardDays[0]?.date || new Date();
-                cur.setDate(cur.getDate() - 14);
-                document.getElementById('startDateInput').value = cur.toISOString().slice(0, 10);
-            });
-
-            // Persistence
-            document.getElementById('saveStateBtn').addEventListener('click', () => {
-                localStorage.setItem('payroll_state', JSON.stringify({
-                    preTax: engine.state.preTax,
-                    postTax: engine.state.postTax,
-                    baseRate: engine.state.baseRate,
-                    incentiveAmt: engine.state.incentiveAmt,
-                    scheduledLeaveLog: engine.state.scheduledLeaveLog
-                }));
-                alert('State Saved.');
-            });
-            document.getElementById('loadStateBtn').addEventListener('click', () => {
-                const saved = localStorage.getItem('payroll_state');
-                if (!saved) return alert('No saved state found.');
-                try {
-                    const data = JSON.parse(saved);
-                    engine.state.preTax = data.preTax;
-                    engine.state.postTax = data.postTax;
-                    engine.state.baseRate = data.baseRate;
-                    engine.state.incentiveAmt = data.incentiveAmt;
-                    engine.state.scheduledLeaveLog = data.scheduledLeaveLog;
-                    document.getElementById('baseRateInput').value = data.baseRate;
-                    document.getElementById('incentiveInput').value = data.incentiveAmt;
-                    ui.render();
-                    alert('State Loaded.');
-                } catch (e) {
-                    alert('Load failed.');
-                }
-            });
-            document.getElementById('clearStateBtn').addEventListener('click', () => {
-                if (confirm('Clear local system persistence frames?')) {
-                    localStorage.removeItem('payroll_state');
-                    alert('State Cleared.');
-                }
-            });
-
-            ui.render();
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('payrollApp', payrollApp);
         });
     </script>
 </body>
