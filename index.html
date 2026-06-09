@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <title>Payroll Command Center</title>
+    <title>Payroll Command Center (Alpine)</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         :root {
             --bg: #050506;
@@ -15,1026 +16,108 @@
             --gap: 12px;
             --tab-height: 64px;
         }
-        html, body {
-            height: 100%;
-            background: var(--bg);
-        }
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial;
-            color: #fff;
-            -webkit-font-smoothing: antialiased;
-            -webkit-text-size-adjust: 100%;
-            padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom));
-        }
-        .app {
-            max-width: 980px;
-            margin: 0 auto;
-            padding: calc(env(safe-area-inset-top) + 12px) 12px 12px;
-            display: flex;
-            flex-direction: column;
-            gap: var(--gap);
-        }
-        .card {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset;
-        }
-        .summary-bar {
-            position: sticky;
-            top: env(safe-area-inset-top);
-            z-index: 40;
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            background: linear-gradient(180deg, rgba(15,15,16,0.95), rgba(11,11,12,0.95));
-            padding: 12px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.04);
-        }
-        .summary-left {
-            display: flex;
-            flex-direction: column;
-        }
-        .summary-kpis {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-            flex-wrap: wrap;
-        }
-        .kpi {
-            background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
-            padding: 8px 10px;
-            border-radius: 8px;
-            min-width: 110px;
-            border: 1px solid rgba(255,255,255,0.02);
-        }
-        .kpi b {
-            display: block;
-            font-size: 1.05rem;
-            margin-top: 2px;
-        }
-        .pill {
-            padding: 6px 10px;
-            border-radius: 999px;
-            background: #121214;
-            color: var(--muted);
-            font-size: 13px;
-            border: 1px solid rgba(255,255,255,0.04);
-        }
-        .muted {
-            color: var(--muted);
-        }
-        .small {
-            font-size: 13px;
-        }
-        .ghost {
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 8px 12px;
-            border-radius: 8px;
-            color: var(--muted);
-            font-size: 13px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .ghost:active {
-            background: rgba(255,255,255,0.05);
-        }
-        .save-btn {
-            background: var(--accent);
-            color: #02120f;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-weight: 700;
-            border: none;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .save-btn:active {
-            opacity: 0.9;
-        }
-        .content {
-            display: flex;
-            flex-direction: column;
-            gap: var(--gap);
-        }
-        .tabs {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 12px;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        .tab {
-            padding: 8px 14px;
-            border-radius: 8px;
-            background: transparent;
-            color: var(--muted);
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 13px;
-            white-space: nowrap;
-        }
-        .tab.active {
-            background: #121214;
-            color: #fff;
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.05);
-        }
-        .tc-row {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            padding: 10px 8px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
-            border: 1px solid rgba(255,255,255,0.02);
-        }
-        .tc-date {
-            width: 110px;
-            min-width: 110px;
-        }
-        .tc-inputs {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            flex: 1;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-        }
-        .tc-select {
-            background: #0b0b0c;
-            border: 1px solid #1a1a1b;
-            color: #fff;
-            padding: 8px;
-            border-radius: 8px;
-            min-width: 72px;
-            text-align: right;
-            font-size: 13px;
-            box-sizing: border-box;
-        }
-        .input-num {
-            background: #0b0b0c;
-            border: 1px solid #1a1a1b;
-            padding: 8px;
-            border-radius: 8px;
-            color: #fff;
-            width: 100px;
-            text-align: right;
-            font-size: 13px;
-            box-sizing: border-box;
-        }
-        .row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-        }
-        .cal-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-        }
-        .cal-cell {
-            background: #0b0b0c;
-            padding: 8px;
-            border-radius: 8px;
-            min-height: 56px;
-            cursor: pointer;
-            font-size: 13px;
-            border: 1px solid rgba(255,255,255,0.02);
-        }
-        .cal-cell .num {
-            font-weight: 700;
-        }
-        .cal-cell .gross {
-            font-size: 0.8rem;
-            color: var(--muted);
-        }
-        .math-line {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px dashed rgba(255,255,255,0.06);
-            font-size: 13px;
-        }
-        .bottom-tabs {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            height: var(--tab-height);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            background: linear-gradient(180deg, rgba(6,6,7,0.85), rgba(6,6,7,0.98));
-            padding: 4px calc(env(safe-area-inset-left) + 4px) calc(env(safe-area-inset-bottom) + 4px) calc(env(safe-area-inset-right) + 4px);
-            z-index: 50;
-            border-top: 1px solid rgba(255,255,255,0.06);
-            backdrop-filter: blur(12px);
-        }
-        .tab-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            color: var(--muted);
-            font-size: 11px;
-            flex: 1;
-            padding: 6px 0;
-            cursor: pointer;
-        }
-        .tab-btn.active {
-            color: #fff;
-        }
-        .fab {
-            position: fixed;
-            right: 16px;
-            bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 16px);
-            width: 56px;
-            height: 56px;
-            border-radius: 16px;
-            background: linear-gradient(180deg, var(--accent), #00a88f);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-            z-index: 60;
-            cursor: pointer;
-        }
-        .fab svg {
-            width: 22px;
-            height: 22px;
-            fill: #02120f;
-        }
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 320px;
-            max-width: 85%;
-            transform: translateX(-110%);
-            transition: transform .28s cubic-bezier(.2, .9, .3, 1);
-            z-index: 70;
-            padding: calc(env(safe-area-inset-top) + 12px) 12px 12px;
-            background: #050506;
-            border-right: 1px solid rgba(255,255,255,0.06);
-            display: flex;
-            flex-direction: column;
-            gap: var(--gap);
-            overflow-y: auto;
-        }
-        .sidebar.open {
-            transform: translateX(0);
-        }
-        .sidebar-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            opacity: 0;
-            transition: opacity .2s;
-            z-index: 65;
-            pointer-events: none;
-        }
-        .sidebar-backdrop.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .sheet {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(180deg, #0f0f10, #0b0b0c);
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
-            padding: 16px 16px calc(env(safe-area-inset-bottom) + 16px);
-            transform: translateY(110%);
-            transition: transform .28s cubic-bezier(.2, .9, .3, 1);
-            z-index: 80;
-            max-height: 92%;
-            overflow: auto;
-            border-top: 1px solid rgba(255,255,255,0.08);
-        }
-        .sheet.open {
-            transform: translateY(0);
-        }
-        @media(min-width:900px) {
-            .app {
-                padding: 24px;
-            }
-            .sidebar {
-                width: 360px;
-            }
-        }
+        html, body { height: 100%; background: var(--bg); margin: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #fff; padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom)); }
+        .app { max-width: 980px; margin: 0 auto; padding: calc(env(safe-area-inset-top) + 12px) 12px 12px; display: flex; flex-direction: column; gap: var(--gap); }
+        .card { background: var(--card); border-radius: 12px; padding: 12px; }
+        .summary-bar { display: flex; justify-content: space-between; gap: 12px; }
+        .summary-kpis { display: flex; gap: 8px; margin-top: 8px; }
+        .kpi { background: rgba(255,255,255,0.02); padding: 8px 10px; border-radius: 8px; min-width: 110px; }
+        .kpi b { display: block; font-size: 1.05rem; margin-top: 2px; }
+        .pill { padding: 6px 10px; border-radius: 999px; background: #121214; color: var(--muted); font-size: 13px; }
+        .muted { color: var(--muted); }
+        .small { font-size: 13px; }
+        .ghost { background: transparent; border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 8px; color: var(--muted); font-size: 13px; }
+        .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+        .tab { padding: 8px 14px; border-radius: 8px; color: var(--muted); font-weight: 600; cursor: pointer; }
+        .tab.active { background: #121214; color: #fff; }
+        .tc-row { display: flex; gap: 8px; align-items: center; padding: 10px 8px; border-radius: 8px; margin-bottom: 8px; background: rgba(255,255,255,0.01); }
+        .tc-date { width: 110px; }
+        .tc-inputs { display: flex; gap: 8px; flex: 1; justify-content: flex-end; }
+        .tc-select { background: #0b0b0c; border: 1px solid #1a1a1b; color: #fff; padding: 8px; border-radius: 8px; }
+        .math-line { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.06); font-size: 13px; }
+        .bottom-tabs { position: fixed; left: 0; right: 0; bottom: 0; height: var(--tab-height); display: flex; justify-content: space-around; align-items: center; background: #060607; border-top: 1px solid rgba(255,255,255,0.06); padding-bottom: env(safe-area-inset-bottom); }
+        .tab-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--muted); font-size: 11px; flex: 1; cursor: pointer; }
+        .tab-btn.active { color: #fff; }
     </style>
 </head>
 <body>
-    <div id="app" class="app">
+    <div class="app" x-data="{
+        tab: 'time',
+        baseRate: 41.64,
+        days: [
+            { date: 'Mon 6/1', reg: 12, ot: 0 },
+            { date: 'Tue 6/2', reg: 12, ot: 0 },
+            { date: 'Wed 6/3', reg: 12, ot: 0 },
+            { date: 'Thu 6/4', reg: 12, ot: 0 },
+            { date: 'Fri 6/5', reg: 12, ot: 0 },
+            { date: 'Sat 6/6', reg: 0, ot: 0 },
+            { date: 'Sun 6/7', reg: 0, ot: 0 }
+        ],
+        get gross() {
+            return this.days.reduce((sum, d) => sum + (Number(d.reg) * this.baseRate) + (Number(d.ot) * this.baseRate * 1.5), 0);
+        },
+        get stateTax() { return this.gross * 0.0499; },
+        get net() { return this.gross - this.stateTax; }
+    }">
         <div class="summary-bar card">
-            <div class="summary-left">
-                <div style="display:flex;align-items:center;gap:12px">
-                    <div style="font-weight:800; font-size:1.1rem;">
-                        {{ fce.calendar.state.monthLabel }}
-                    </div>
-                    <div style="display:flex;gap:6px">
-                        <button class="ghost" style="padding:4px 8px;" @click="fce.calendar.prevMonth()">◀</button>
-                        <button class="ghost" style="padding:4px 8px;" @click="fce.calendar.nextMonth()">▶</button>
-                    </div>
-                </div>
+            <div>
+                <div style="font-weight:800; font-size:1.1rem;">June 2026</div>
                 <div class="summary-kpis">
-                    <div class="kpi">
-                        <small class="muted small">Projected Gross</small>
-                        <b>{{ fmt(fce.payroll.pay.gross) }}</b>
-                    </div>
-                    <div class="kpi">
-                        <small class="muted small">Est Net Pay</small>
-                        <b style="color:var(--success)">{{ fmt(fce.payroll.pay.net) }}</b>
-                    </div>
-                    <div class="kpi">
-                        <small class="muted small">Planned Leave</small>
-                        <b style="color:var(--accent)">{{ fce.calendar.state.monthMetrics.leaveHrs }}h</b>
-                    </div>
+                    <div class="kpi"><small class="muted small">Projected Gross</small><b x-text="'$' + gross.toFixed(2)">$0.00</b></div>
+                    <div class="kpi"><small class="muted small">Est Net Pay</small><b x-text="'$' + net.toFixed(2)" style="color:var(--success)">$0.00</b></div>
                 </div>
             </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-                <div class="pill small">
-                    Pay Period: {{ periodLabel }}
-                </div>
-                <div style="display:flex;gap:8px">
-                    <button class="ghost" @click="fce.calculatePayrollMatrix()">Recompute</button>
-                    <button class="save-btn" @click="exportPreview">Preview Export</button>
-                </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px">
+                <div class="pill small">Pay Period Fixed Frame</div>
             </div>
         </div>
 
-        <div class="content">
-            <div class="card">
-                <div class="tabs">
-                    <div class="tab" :class="{active:tab==='time'}" @click="tab='time'">Timecard</div>
-                    <div class="tab" :class="{active:tab==='calendar'}" @click="tab='calendar'">Calendar</div>
-                    <div class="tab" :class="{active:tab==='deductions'}" @click="tab='deductions'">Deductions</div>
-                    <div class="tab" :class="{active:tab==='tax'}" @click="tab='tax'">Taxes</div>
-                    <div class="tab" :class="{active:tab==='debug'}" @click="tab='debug'">Debug</div>
-                </div>
+        <div class="card">
+            <div class="tabs">
+                <div class="tab" :class="tab === 'time' ? 'active' : ''" @click="tab = 'time'">Timecard</div>
+                <div class="tab" :class="tab === 'tax' ? 'active' : ''" @click="tab = 'tax'">Taxes</div>
+            </div>
 
-                <div v-if="tab==='time'">
-                    <div v-for="(d,i) in fce.timecard.state.days" :key="d.iso" class="tc-row">
-                        <div class="tc-date">
-                            <div style="font-weight:700">
-                                {{ d.label }} {{ d.dateShort }}
-                            </div>
-                            <div class="muted small">
-                                {{ d.isDefaultWorkDay ? 'Scheduled Shift' : 'Off' }}
-                            </div>
-                        </div>
+            <div x-show="tab === 'time'">
+                <template x-for="(day, index) in days" :key="index">
+                    <div class="tc-row">
+                        <div class="tc-date"><div style="font-weight:700" x-text="day.date"></div></div>
                         <div class="tc-inputs">
-                            <div v-if="d.label !== 'Sun'" style="display:flex;align-items:center;gap:6px">
-                                <input type="checkbox" :id="'epto-'+i" :checked="d.eptoChecked" @change="toggleEpto(i)" />
-                                <label :for="'epto-'+i" class="small muted">EPTO</label>
-                            </div>
-                            <div v-if="d.label !== 'Sun'">
+                            <div>
                                 <label class="small muted">Reg</label>
-                                <select class="tc-select" v-model.number="d.reg" @change="debouncedRecompute" :disabled="d.eptoChecked">
-                                    <option v-for="h in fce.timecard.state.hourOptions" :key="'r-'+h" :value="h">{{ h }}</option>
+                                <select class="tc-select" x-model="day.reg">
+                                    <template x-for="h in [0,4,6,8,10,12]">
+                                        <option :value="h" x-text="h"></option>
+                                    </template>
                                 </select>
                             </div>
-                            <div v-if="d.label !== 'Sun'">
+                            <div>
                                 <label class="small muted" style="color:var(--danger)">OT</label>
-                                <select class="tc-select" v-model.number="d.ot" @change="debouncedRecompute" :disabled="d.eptoChecked" style="color:var(--danger)">
-                                    <option v-for="h in fce.timecard.state.hourOptions" :key="'o-'+h" :value="h">{{ h }}</option>
-                                </select>
-                            </div>
-                            <div v-if="d.label === 'Sun'">
-                                <label class="small muted" style="color:var(--accent)">DT</label>
-                                <select class="tc-select" v-model.number="d.dt" @change="debouncedRecompute" style="color:var(--accent)">
-                                    <option v-for="h in fce.timecard.state.hourOptions" :key="'dt-'+h" :value="h">{{ h }}</option>
+                                <select class="tc-select" style="color:var(--danger)" x-model="day.ot">
+                                    <template x-for="h in [0,2,4,6,8]">
+                                        <option :value="h" x-text="h"></option>
+                                    </template>
                                 </select>
                             </div>
                         </div>
                     </div>
-                    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-                        <button class="ghost" @click="autoFillFromCalendar">Auto Fill From Calendar</button>
-                        <button class="ghost" @click="clearTimecard">Clear Timecard</button>
-                        <div style="flex:1"></div>
-                        <button class="save-btn" @click="fce.calculatePayrollMatrix()">Save & Recompute</button>
-                    </div>
-                </div>
-
-                <div v-if="tab==='calendar'">
-                    <div class="cal-grid" style="margin-top:8px">
-                        <div class="cal-cell" style="opacity:.6;font-weight:700;text-align:center;min-height:unset;" v-for="w in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']" :key="w">
-                            {{ w }}
-                        </div>
-                        <div v-for="b in fce.calendar.state.blanks" :key="'b'+b" class="cal-cell" style="background:transparent;border:none;"></div>
-                        <div v-for="d in fce.calendar.state.days" :key="d.iso" class="cal-cell" @click="openDayModal(d)">
-                            <div style="display:flex;justify-content:space-between;align-items:center">
-                                <div class="num">{{ d.dayNum }}</div>
-                                <div class="gross">{{ fmt(d.estGross) }}</div>
-                            </div>
-                            <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
-                                <div v-if="d.leaveType" class="pill small" style="background:#2b2b2c; padding:2px 6px; font-size:11px;">
-                                    {{ d.leaveType }}
-                                </div>
-                                <div v-if="d.shiftCoverage" class="pill small" style="background:#1b2b1b;color:var(--success); padding:2px 6px; font-size:11px;">
-                                    Cov
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div v-if="tab==='deductions'">
-                    <div class="card">
-                        <h3 style="margin:0 0 12px 0; font-size:1rem;">Pre-Tax Deductions</h3>
-                        <div v-for="(label,key) in fce.payroll.state.preTaxLabels" :key="'pre-'+key" style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
-                            <div>{{ label }}</div>
-                            <div style="display:flex;align-items:center;gap:6px">
-                                <span class="muted small">$</span>
-                                <input class="input-num" type="number" step="0.01" v-model.number="fce.payroll.state.preTax[key]" @input="saveDeductions" inputmode="decimal" />
-                            </div>
-                        </div>
-                        <div class="row" style="margin-top:12px; border-top:1px dashed rgba(255,255,255,0.08); padding-top:8px;">
-                            <div class="muted small">Total Pre-Tax</div>
-                            <div style="color:var(--danger); font-weight:700;">{{ fmt(fce.payroll.state.preTaxTotal) }}</div>
-                        </div>
-                    </div>
-                    <div class="card" style="margin-top:12px">
-                        <h3 style="margin:0 0 12px 0; font-size:1rem;">Post-Tax Deductions</h3>
-                        <div v-for="(label,key) in fce.payroll.state.postTaxLabels" :key="'post-'+key" style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
-                            <div>{{ label }}</div>
-                            <div style="display:flex;align-items:center;gap:6px">
-                                <span class="muted small">$</span>
-                                <input class="input-num" type="number" step="0.01" v-model.number="fce.payroll.state.postTax[key]" @input="saveDeductions" inputmode="decimal" />
-                            </div>
-                        </div>
-                        <div class="row" style="margin-top:12px; border-top:1px dashed rgba(255,255,255,0.08); padding-top:8px;">
-                            <div class="muted small">Total Post-Tax</div>
-                            <div style="color:var(--danger); font-weight:700;">{{ fmt(fce.payroll.state.postTaxTotal) }}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div v-if="tab==='tax'">
-                    <div class="card">
-                        <div class="row">
-                            <div>
-                                <b>Federal Withholding</b>
-                                <div class="muted small">Simple 8.2% baseline toggle</div>
-                            </div>
-                            <div>
-                                <input type="checkbox" v-model="fce.tax.state.enableFedWithholding" @change="fce.calculatePayrollMatrix" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card" style="margin-top:12px">
-                        <h3 style="margin:0 0 12px 0; font-size:1rem;">Tax Rolldown</h3>
-                        <div class="math-line">
-                            <span>Taxable Gross</span><span>{{ fmt(taxableGross) }}</span>
-                        </div>
-                        <div class="math-line">
-                            <span>Federal Withholding</span><span>{{ fmt(fce.payroll.pay.taxes.federal) }}</span>
-                        </div>
-                        <div class="math-line">
-                            <span>Social Security (6.2%)</span><span>{{ fmt(fce.payroll.pay.taxes.ss) }}</span>
-                        </div>
-                        <div class="math-line">
-                            <span>Medicare (1.45%)</span><span>{{ fmt(fce.payroll.pay.taxes.med) }}</span>
-                        </div>
-                        <div class="math-line">
-                            <span>GA State Tax (4.99%)</span><span>{{ fmt(fce.payroll.pay.taxes.state) }}</span>
-                        </div>
-                        <div class="math-line" style="font-weight:700; border-bottom:none;">
-                            <span>Total Taxes</span><span>{{ fmt(fce.payroll.pay.taxesTotal) }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div v-if="tab==='debug'">
-                    <div class="card">
-                        <h3 style="margin:0 0 8px 0">Engine Architecture State</h3>
-                        <pre style="white-space:pre-wrap;font-family:monospace;font-size:11px; background:#050506; padding:8px; border-radius:6px; color:#a2b6cb;">{{ debugDump }}</pre>
-                    </div>
-                </div>
+                </template>
             </div>
-        </div>
 
-        <div class="fab" @click="toggleSidebar">
-            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /></svg>
-        </div>
-
-        <div :class="['sidebar', {open:sidebarOpen}]">
-            <div class="card">
-                <div class="row">
-                    <div>
-                        <b>Pay Period Navigator</b>
-                        <div class="muted small">Shift tracking target windows</div>
-                    </div>
-                    <button class="ghost" @click="toggleSidebar">Close</button>
-                </div>
-                <div style="margin-top:12px">
-                    <div class="row">
-                        <div class="muted small">Active Frame</div>
-                        <div><b>{{ periodLabel }}</b></div>
-                    </div>
-                    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-                        <input type="date" class="input-num" style="width:140px; text-align:left;" v-model="startIsoLocal">
-                        <button class="ghost" @click="applyStart">Apply</button>
-                    </div>
-                    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
-                        <button class="ghost" style="font-size:12px; padding:6px 10px;" @click="setStartToThisMonth">Start of Month</button>
-                        <button class="ghost" style="font-size:12px; padding:6px 10px;" @click="setStartToLastPayPeriod">Prev Period</button>
-                        <button class="ghost" style="font-size:12px; padding:6px 10px;" @click="setStartToToday">Today</button>
-                    </div>
-                    <div style="display:flex;gap:8px;margin-top:12px">
-                        <button class="save-btn" style="flex:1;" @click="prevPeriod">◀ Prev</button>
-                        <button class="save-btn" style="flex:1;" @click="nextPeriod">Next ▶</button>
-                        <button class="ghost" @click="fce.calculatePayrollMatrix">Sync</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <h4 style="margin:0 0 8px 0">Wage Rules Configuration</h4>
-                <div style="display:flex;flex-direction:column;gap:8px">
-                    <label class="small muted">Base Hourly Rate ($)</label>
-                    <input class="input-num" style="width:100%; text-align:left;" type="number" step="0.01" v-model.number="fce.payroll.state.baseRate" @input="debouncedRecompute" />
-                    <label class="small muted">Incentive / Bonus Pay Out ($)</label>
-                    <input class="input-num" style="width:100%; text-align:left;" type="number" step="0.01" v-model.number="fce.payroll.state.incentiveAmt" @input="debouncedRecompute" />
-                </div>
-            </div>
-            <div class="card">
-                <h4 style="margin:0 0 8px 0">Sandbox Persistence</h4>
-                <div style="display:flex;gap:8px;flex-wrap:wrap">
-                    <button class="ghost" style="flex:1;" @click="saveAll">Save State</button>
-                    <button class="ghost" style="flex:1;" @click="loadAll">Load State</button>
-                    <button class="ghost" @click="clearAll">Clear</button>
-                </div>
-            </div>
-        </div>
-        <div :class="['sidebar-backdrop',{show:sidebarOpen}]" @click="toggleSidebar"></div>
-
-        <div :class="['sheet',{open:sheetOpen}]" v-if="sheetOpen && activeDay">
-            <div class="row">
-                <div>
-                    <h3 style="margin:0">{{ activeDay.dateShort }} — Configuration Block</h3>
-                    <div class="muted small">{{ activeDay.label }}</div>
-                </div>
-                <button class="ghost" @click="closeSheet">Close</button>
-            </div>
-            <div style="margin-top:16px">
-                <label class="small muted" style="display:block; margin-bottom:6px;">Leave Allocation Type</label>
-                <select class="input-num" style="width:100%; text-align:left;" v-model="activeDayData.leaveType">
-                    <option value="">No Time-Off Planned</option>
-                    <option value="Regular PTO">Regular PTO</option>
-                    <option value="Emergency PTO">Emergency PTO</option>
-                    <option value="Holiday Leave Taken">Holiday Leave Taken</option>
-                </select>
-                <div style="margin-top:16px" v-if="!activeDay.isDefaultWorkDay">
-                    <label class="small muted">Weekend System Coverage</label>
-                    <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
-                        <input type="checkbox" v-model="activeDayData.shiftCoverage" id="covToggle">
-                        <label for="covToggle" class="small muted">{{ activeDayData.shiftCoverage ? 'Active Coverage (1.5x Premium Overtime Factor)' : 'No Coverage' }}</label>
-                    </div>
-                </div>
-                <div style="margin-top:20px;display:flex;gap:8px;justify-content:flex-end">
-                    <button class="ghost" @click="closeSheet">Cancel</button>
-                    <button class="save-btn" @click="commitDay">Commit Rules</button>
+            <div x-show="tab === 'tax'">
+                <div class="card">
+                    <div class="math-line"><span>Taxable Gross</span><span x-text="'$' + gross.toFixed(2)"></span></div>
+                    <div class="math-line"><span>GA State Tax (4.99%)</span><span x-text="'$' + stateTax.toFixed(2)"></span></div>
+                    <div class="math-line" style="font-weight:700;"><span>Total Taxes</span><span x-text="'$' + stateTax.toFixed(2)"></span></div>
                 </div>
             </div>
         </div>
 
         <div class="bottom-tabs">
-            <div class="tab-btn" :class="{active:tab==='time'}" @click="tab='time'">
-                <span>⏱</span><span>Time</span>
-            </div>
-            <div class="tab-btn" :class="{active:tab==='calendar'}" @click="tab='calendar'">
-                <span>📅</span><span>Cal</span>
-            </div>
-            <div class="tab-btn" :class="{active:tab==='deductions'}" @click="tab='deductions'">
-                <span>➖</span><span>Deduct</span>
-            </div>
-            <div class="tab-btn" :class="{active:tab==='tax'}" @click="tab='tax'">
-                <span>💸</span><span>Tax</span>
-            </div>
-            <div class="tab-btn" :class="{active:tab==='debug'}" @click="tab='debug'">
-                <span>🛠</span><span>Debug</span>
-            </div>
+            <div class="tab-btn" :class="tab === 'time' ? 'active' : ''" @click="tab = 'time'"><span>⏱</span><span>Time</span></div>
+            <div class="tab-btn" :class="tab === 'tax' ? 'active' : ''" @click="tab = 'tax'"><span>💸</span><span>Tax</span></div>
         </div>
     </div>
-
-    <script src="https://unpkg.com/vue@2.7.14/dist/vue.min.js"></script>
-    <script>
-        window.debounce = function(fn, wait) {
-            let t; 
-            return function() {
-                var ctx = this, args = arguments;
-                clearTimeout(t); 
-                t = setTimeout(function() { fn.apply(ctx, args); }, wait);
-            };
-        };
-
-        function createFinancialCommandEngine(config) {
-            if (!config) config = {};
-            
-            function toISO(d) {
-                try {
-                    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-                } catch(e) {
-                    return new Date().toISOString().slice(0, 10);
-                }
-            }
-            function sum(obj) {
-                return Object.keys(obj || {}).reduce(function(acc, key) {
-                    return acc + Number(obj[key] || 0);
-                }, 0);
-            }
-
-            var taxEngine = {
-                state: { enableFedWithholding: (config.tax && config.tax.enableFedWithholding !== undefined) ? config.tax.enableFedWithholding : true },
-                computeSimple: function(taxableGross) {
-                    return {
-                        ss: taxableGross * 0.062,
-                        med: taxableGross * 0.0145,
-                        state: taxableGross * 0.0499,
-                        federal: this.state.enableFedWithholding ? taxableGross * 0.082 : 0
-                    };
-                }
-            };
-
-            var calendarEngine = (function() {
-                var state = {
-                    currentYear: new Date().getFullYear(),
-                    currentMonth: new Date().getMonth(),
-                    scheduledLeaveLog: [],
-                    baseDailyRate: (config.calendar && config.calendar.baseDailyRate) || 0,
-                    blanks: [],
-                    days: [],
-                    monthLabel: '',
-                    monthMetrics: { gross: 0, net: 0, leaveHrs: 0 }
-                };
-
-                function recompute() {
-                    var year = state.currentYear;
-                    var month = state.currentMonth;
-                    var first = new Date(year, month, 1);
-                    var daysInMonth = new Date(year, month + 1, 0).getDate();
-                    var startBlankCount = first.getDay();
-                    var today = new Date();
-                    var grossTotal = 0, leaveHrsTotal = 0;
-                    var dayArray = [];
-                    
-                    for (var d = 1; d <= daysInMonth; d++) {
-                        var date = new Date(year, month, d);
-                        var iso = toISO(date);
-                        var log = null;
-                        for(var idx=0; idx < state.scheduledLeaveLog.length; idx++) {
-                            if(state.scheduledLeaveLog[idx].date === iso) {
-                                log = state.scheduledLeaveLog[idx];
-                                break;
-                            }
-                        }
-                        var isDefaultWorkDay = [1, 2, 3, 4, 5].indexOf(date.getDay()) !== -1;
-                        var leaveType = log ? log.leaveType : "";
-                        var shiftCoverage = log ? !!log.shiftCoverage : false;
-                        var payMultiplier = isDefaultWorkDay ? 1 : 0;
-                        if (leaveType) { payMultiplier = 1; leaveHrsTotal += 12; }
-                        if (shiftCoverage) payMultiplier *= 1.5;
-                        var estGross = state.baseDailyRate * payMultiplier;
-                        grossTotal += estGross;
-                        
-                        dayArray.push({
-                            iso: iso, date: date, dayNum: d, isDefaultWorkDay: isDefaultWorkDay, 
-                            isToday: date.toDateString() === today.toDateString(), 
-                            leaveType: leaveType, shiftCoverage: shiftCoverage, estGross: estGross
-                        });
-                    }
-
-                    var blankArr = [];
-                    for(var b=0; b<startBlankCount; b++) { blankArr.push(b); }
-                    state.blanks = blankArr;
-                    state.days = dayArray;
-                    state.monthLabel = first.toLocaleString(undefined, { month: 'long', year: 'numeric' });
-                    state.monthMetrics = { gross: grossTotal, net: grossTotal, leaveHrs: leaveHrsTotal };
-                }
-
-                return {
-                    state: state,
-                    recompute: recompute,
-                    nextMonth: function() {
-                        state.currentMonth++; if (state.currentMonth > 11) { state.currentMonth = 0; state.currentYear++; }
-                        recompute();
-                    },
-                    prevMonth: function() {
-                        state.currentMonth--; if (state.currentMonth < 0) { state.currentMonth = 11; state.currentYear--; }
-                        recompute();
-                    },
-                    upsertDayConfig: function(iso, payload) {
-                        state.scheduledLeaveLog = state.scheduledLeaveLog.filter(function(l) { return l.date !== iso; });
-                        if (payload.leaveType || payload.shiftCoverage) {
-                            state.scheduledLeaveLog.push({ date: iso, leaveType: payload.leaveType, shiftCoverage: payload.shiftCoverage, hours: 12 });
-                        }
-                        recompute();
-                    }
-                };
-            })();
-
-            var timecardEngine = (function() {
-                var state = { days: [], hourOptions: (config.timecard && config.timecard.hourOptions) || [0, 4, 6, 8, 10, 12], startDate: null };
-                function buildPeriod(startDate) {
-                    var start = new Date(startDate);
-                    state.startDate = new Date(start);
-                    state.days = [];
-                    for (var i = 0; i < 14; i++) {
-                        var d = new Date(start);
-                        d.setDate(start.getDate() + i);
-                        var iso = toISO(d);
-                        var label = d.toLocaleString('en-US', { weekday: 'short' });
-                        var dateShort = d.toLocaleString('en-US', { month: 'numeric', day: 'numeric' });
-                        var isDefaultWorkDay = ['Sat', 'Sun'].indexOf(label) === -1;
-                        state.days.push({
-                            iso: iso, date: d, label: label, dateShort: dateShort, isDefaultWorkDay: isDefaultWorkDay, reg: isDefaultWorkDay ? 12 : 0, ot: 0, dt: 0, eptoChecked: false
-                        });
-                    }
-                }
-                return {
-                    state: state,
-                    buildPeriod: buildPeriod,
-                    toggleEPTO: function(idx) {
-                        var d = state.days[idx];
-                        if (!d) return;
-                        d.eptoChecked = !d.eptoChecked;
-                        if (d.eptoChecked) { d.reg = 0; d.ot = 0; } else { d.reg = d.isDefaultWorkDay ? 12 : 0; }
-                    }
-                };
-            })();
-
-            var payrollEngine = (function() {
-                var state = {
-                    baseRate: (config.payroll && config.payroll.baseRate) || 41.64,
-                    incentiveAmt: 0,
-                    preTax: Object.assign({}, config.payroll && config.payroll.preTaxDefaults),
-                    postTax: Object.assign({}, config.payroll && config.payroll.postTaxDefaults),
-                    preTaxLabels: { med: 'Medical Plan Premium', dental: 'Dental Premium', k401: 'Pre-Tax 401(k)' },
-                    postTaxLabels: { roth: 'Roth 401(k) Contribution' },
-                    preTaxTotal: 0, postTaxTotal: 0, stats: {}, pay: { taxes: {} }, dtPay: 0
-                };
-
-                function recomputeFromTimecard() {
-                    var days = timecardEngine.state.days;
-                    var baseRate = state.baseRate;
-                    var incentiveAmt = state.incentiveAmt;
-                    var s = { w1Reg: 0, w1OT: 0, w2Reg: 0, w2OT: 0, dtHrs: 0 };
-                    var w1CumulativeReg = 0, w2CumulativeReg = 0;
-
-                    days.forEach(function(d, i) {
-                        var inputReg = Number(d.reg || 0);
-                        var inputOt = Number(d.ot || 0);
-                        var inputDt = Number(d.dt || 0);
-
-                        if (d.label === 'Sun') {
-                            s.dtHrs += inputDt;
-                        } else if (i < 7) {
-                            if (w1CumulativeReg + inputReg > 40) {
-                                var allowedReg = Math.max(0, 40 - w1CumulativeReg);
-                                s.w1Reg += allowedReg; s.w1OT += (inputReg - allowedReg) + inputOt; w1CumulativeReg += allowedReg;
-                            } else {
-                                s.w1Reg += inputReg; s.w1OT += inputOt; w1CumulativeReg += inputReg;
-                            }
-                        } else {
-                            if (w2CumulativeReg + inputReg > 40) {
-                                var allowedReg = Math.max(0, 40 - w2CumulativeReg);
-                                s.w2Reg += allowedReg; s.w2OT += (inputReg - allowedReg) + inputOt; w2CumulativeReg += allowedReg;
-                            } else {
-                                s.w2Reg += inputReg; s.w2OT += inputOt; w2CumulativeReg += inputReg;
-                            }
-                        }
-                    });
-
-                    Object.assign(state.stats, {
-                        w1GrossNoOT: s.w1Reg * baseRate, w2GrossNoOT: s.w2Reg * baseRate,
-                        w1OT: s.w1OT, w2OT: s.w2OT, w1OTPay: s.w1OT * (baseRate * 1.5)
-                    });
-
-                    var w2RegGross = state.stats.w2GrossNoOT + incentiveAmt;
-                    var totalW2ActiveHours = s.w2Reg + s.w2OT;
-                    state.stats.w2OTRate = totalW2ActiveHours > 0 ? (w2RegGross / totalW2ActiveHours) * 1.5 : baseRate * 1.5;
-                    state.stats.w2OTPay = s.w2OT * state.stats.w2OTRate;
-                    state.dtPay = s.dtHrs * baseRate * 2.0;
-
-                    var earnings = state.stats.w1GrossNoOT + state.stats.w2GrossNoOT + state.stats.w1OTPay + state.stats.w2OTPay + state.dtPay + incentiveAmt;
-                    state.pay.gross = earnings;
-                    state.preTaxTotal = sum(state.preTax);
-                    state.postTaxTotal = sum(state.postTax);
-
-                    var taxableGross = Math.max(0, earnings - state.preTaxTotal);
-                    var taxes = taxEngine.computeSimple(taxableGross);
-
-                    Object.assign(state.pay.taxes, taxes);
-                    state.pay.taxesTotal = taxes.ss + taxes.med + taxes.state + taxes.federal;
-                    state.pay.net = Math.max(0, earnings - state.preTaxTotal - state.pay.taxesTotal - state.postTaxTotal);
-
-                    try {
-                        localStorage.setItem("kia_pre_v2", JSON.stringify(state.preTax));
-                        localStorage.setItem("kia_post_v2", JSON.stringify(state.postTax));
-                        localStorage.setItem("kia_incentive_v2", String(state.incentiveAmt));
-                    } catch(e) {}
-                }
-
-                return { state: state, recomputeFromTimecard: recomputeFromTimecard };
-            })();
-
-            return {
-                calendar: calendarEngine, timecard: timecardEngine, payroll: payrollEngine, tax: taxEngine,
-                calculatePayrollMatrix: function() { payrollEngine.recomputeFromTimecard(); },
-                buildPayPeriod: function(startDate) {
-                    timecardEngine.buildPeriod(startDate);
-                    var d = new Date(startDate);
-                    calendarEngine.state.currentYear = d.getFullYear();
-                    calendarEngine.state.currentMonth = d.getMonth();
-                    calendarEngine.recompute();
-                    payrollEngine.recomputeFromTimecard();
-                },
-                shiftPayPeriod: function(delta) {
-                    var start = timecardEngine.state.startDate ? new Date(timecardEngine.state.startDate) : new Date();
-                    start.setDate(start.getDate() + delta * 14);
-                    this.buildPayPeriod(start);
-                }
-            };
-        }
-
-        var engineInstance = createFinancialCommandEngine({
-            calendar: { baseDailyRate: 333.12 },
-            payroll: { baseRate: 41.64, preTaxDefaults: { med: 0, dental: 0, k401: 0 }, postTaxDefaults: { roth: 0 } }
-        });
-
-        new Vue({
-            el: '#app',
-            data: function() {
-                return {
-                    fce: engineInstance, tab: 'time', sidebarOpen: false, sheetOpen: false,
-                    activeDay: null, activeDayData: { leaveType: '', shiftCoverage: false }, startIsoLocal: ''
-                };
-            },
-            computed: {
-                periodLabel: function() {
-                    var days = this.fce.timecard.state.days;
-                    return days.length ? days[0].dateShort + ' — ' + days[days.length - 1].dateShort : '—';
-                },
-                taxableGross: function() {
-                    return Math.max(0, (this.fce.payroll.pay.gross || 0) - this.fce.payroll.state.preTaxTotal);
-                },
-                debugDump: function() {
-                    return JSON.stringify({ calendar: this.fce.calendar.state, timecard: this.fce.timecard.state, payroll: this.fce.payroll.state }, null, 2);
-                }
-            },
-            methods: {
-                fmt: function(v) { return '$' + Number(v || 0).toFixed(2); },
-                toggleSidebar: function() { this.sidebarOpen = !this.sidebarOpen; },
-                openDayModal: function(d) {
-                    this.activeDay = d;
-                    var log = null;
-                    var logs = this.fce.calendar.state.scheduledLeaveLog;
-                    for (var i=0; i<logs.length; i++) {
-                        if (logs[i].date === d.iso) { log = logs[i]; break; }
-                    }
-                    this.activeDayData = { leaveType: log ? log.leaveType : '', shiftCoverage: log ? !!log.shiftCoverage : false };
-                    this.sheetOpen = true;
-                },
-                closeSheet: function() { this.sheetOpen = false; this.activeDay = null; },
-                commitDay: function() {
-                    if (!this.activeDay) return;
-                    this.fce.calendar.upsertDayConfig(this.activeDay.iso, this.activeDayData);
-                    this.fce.calculatePayrollMatrix();
-                    this.closeSheet();
-                },
-                toggleEpto: function(idx) {
-                    this.fce.timecard.toggleEPTO(idx);
-                    this.fce.calculatePayrollMatrix();
-                },
-                autoFillFromCalendar: function() {
-                    var self = this;
-                    this.fce.timecard.state.days.forEach(function(td) {
-                        var calDay = null;
-                        var cDays = self.fce.calendar.state.days;
-                        for(var i=0; i<cDays.length; i++) {
-                            if (cDays[i].iso === td.iso) { calDay = cDays[i]; break; }
-                        }
-                        td.reg = calDay && calDay.isDefaultWorkDay ? 12 : 0;
-                        td.ot = 0; td.dt = 0; td.eptoChecked = false;
-                    });
-                    this.fce.calculatePayrollMatrix();
-                },
-                clearTimecard: function() {
-                    this.fce.timecard.state.days.forEach(function(td) { td.reg = 0; td.ot = 0; td.dt = 0; td.eptoChecked = false; });
-                    this.fce.calculatePayrollMatrix();
-                },
-                saveDeductions: function() {
-                    var st = this.fce.payroll.state;
-                    st.preTaxTotal = Object.keys(st.preTax).reduce(function(a, k) { return a + Number(st.preTax[k] || 0); }, 0);
-                    st.postTaxTotal = Object.keys(st.postTax).reduce(function(a, k) { return a + Number(st.postTax[k] || 0); }, 0);
-                    this.debouncedRecompute();
-                },
-                applyStart: function() {
-                    if (!this.startIsoLocal) return;
-                    this.fce.buildPayPeriod(new Date(this.startIsoLocal + 'T00:00:00'));
-                    try { localStorage.setItem('kia_pay_period_start', this.startIsoLocal); } catch(e) {}
-                    this.sidebarOpen = false;
-                },
-                setStartToThisMonth: function() {
-                    var d = new Date(); d.setDate(1);
-                    this.startIsoLocal = d.toISOString().slice(0, 10);
-                    this.applyStart();
-                },
-                setStartToLastPayPeriod: function() {
-                    var cur = this.fce.timecard.state.startDate ? new Date(this.fce.timecard.state.startDate) : new Date();
-                    cur.setDate(cur.getDate() - 14);
-                    this.startIsoLocal = cur.toISOString().slice(0, 10);
-                    this.applyStart();
-                },
-                setStartToToday: function() {
-                    this.startIsoLocal = new Date().toISOString().slice(0, 10);
-                    this.applyStart();
-                },
-                prevPeriod: function() {
-                    this.fce.shiftPayPeriod(-1);
-                    this.syncPeriodStorage();
-                },
-                nextPeriod: function() {
-                    this.fce.shiftPayPeriod(1);
-                    this.syncPeriodStorage();
-                },
-                syncPeriodStorage: function() {
-                    try {
-                        var s = this.fce.timecard.state.startDate;
-                        if (s) localStorage.setItem('kia_pay_period_start', s.toISOString().slice(0, 10));
-                    } catch(e) {}
-                },
-                saveAll: function() {
-                    try {
-                        localStorage.setItem('kia_state', JSON.stringify({
-                            pre: this.fce.payroll.state.preTax, post: this.fce.payroll.state.postTax,
-                            incentive: this.fce.payroll.state.incentiveAmt,
-                            payStart: this.fce.timecard.state.startDate ? this.fce.timecard.state.startDate.toISOString().slice(0, 10) : null
-                        }));
-                        alert('State Saved.');
-                    } catch(e) { alert('Save failed.'); }
-                },
-                loadAll: function() {
-                    try {
-                        var raw = localStorage.getItem('kia_state');
-                        if (!raw) return alert('No saved state found.');
-                        var obj = JSON.parse(raw);
-                        if (obj.pre) this.fce.payroll.state.preTax = obj.pre;
-                        if (obj.post) this.fce.payroll.state.postTax = obj.post;
-                        if (obj.incentive != null) this.fce.payroll.state.incentiveAmt = Number(obj.incentive);
-                        if (obj.payStart) { this.startIsoLocal = obj.payStart; this.applyStart(); }
-                        this.fce.calculatePayrollMatrix();
-                        alert('State Loaded.');
-                    } catch(e) { alert('Load failed.'); }
-                },
-                clearAll: function() {
-                    if (!confirm('Clear local system persistence frames?')) return;
-                    try {
-                        localStorage.clear();
-                        alert('Persistence Cleared.');
-                    } catch(e) {}
-                },
-                exportPreview: function() {
-                    var rows = [['Date', 'Reg_Hrs', 'OT_Hrs', 'DT_Hrs'].join(',')];
-                    this.fce.timecard.state.days.forEach(function(d) { rows.push([d.iso, d.reg || 0, d.ot || 0, d.dt || 0].join(',')); });
-                    var w = window.open('', '_blank');
-                    w.document.body.innerHTML = '<pre style="background:#050506;color:#fff;padding:16px;white-space:pre-wrap;font-family:monospace">' + rows.join('\n') + '</pre>';
-                },
-                debouncedRecompute: window.debounce(function() {
-                    this.fce.calculatePayrollMatrix();
-                }, 220)
-            },
-            created: function() {
-                var saved = null;
-                try { saved = localStorage.getItem('kia_pay_period_start'); } catch(e) {}
-                var start = saved ? new Date(saved + 'T00:00:00') : new Date();
-                if (!saved) start.setDate(1);
-                
-                this.startIsoLocal = start.toISOString().slice(0, 10);
-                this.fce.buildPayPeriod(start);
-                
-                try {
-                    var pre = JSON.parse(localStorage.getItem('kia_pre_v2') || '{}');
-                    var post = JSON.parse(localStorage.getItem('kia_post_v2') || '{}');
-                    var inc = Number(localStorage.getItem('kia_incentive_v2') || 0);
-                    if (pre) this.fce.payroll.state.preTax = pre;
-                    if (post) this.fce.payroll.state.postTax = post;
-                    this.fce.payroll.state.incentiveAmt = inc;
-                } catch(e) {}
-                
-                this.fce.calculatePayrollMatrix();
-                window.fce = this.fce;
-            }
-        });
-    </script>
 </body>
-    </html>
+</html>
