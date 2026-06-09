@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <title>Payroll Command Center (Alpine)</title>
+    <title>Payroll Command Center</title>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         :root {
@@ -16,77 +16,231 @@
             --gap: 12px;
             --tab-height: 64px;
         }
-        html, body { height: 100%; background: var(--bg); margin: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #fff; padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom)); }
-        .app { max-width: 980px; margin: 0 auto; padding: calc(env(safe-area-inset-top) + 12px) 12px 12px; display: flex; flex-direction: column; gap: var(--gap); }
-        .card { background: var(--card); border-radius: 12px; padding: 12px; }
-        .summary-bar { display: flex; justify-content: space-between; gap: 12px; }
-        .summary-kpis { display: flex; gap: 8px; margin-top: 8px; }
-        .kpi { background: rgba(255,255,255,0.02); padding: 8px 10px; border-radius: 8px; min-width: 110px; }
-        .kpi b { display: block; font-size: 1.05rem; margin-top: 2px; }
-        .pill { padding: 6px 10px; border-radius: 999px; background: #121214; color: var(--muted); font-size: 13px; }
-        .muted { color: var(--muted); }
-        .small { font-size: 13px; }
-        .ghost { background: transparent; border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 8px; color: var(--muted); font-size: 13px; }
-        .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
-        .tab { padding: 8px 14px; border-radius: 8px; color: var(--muted); font-weight: 600; cursor: pointer; }
-        .tab.active { background: #121214; color: #fff; }
-        .tc-row { display: flex; gap: 8px; align-items: center; padding: 10px 8px; border-radius: 8px; margin-bottom: 8px; background: rgba(255,255,255,0.01); }
-        .tc-date { width: 110px; }
-        .tc-inputs { display: flex; gap: 8px; flex: 1; justify-content: flex-end; }
-        .tc-select { background: #0b0b0c; border: 1px solid #1a1a1b; color: #fff; padding: 8px; border-radius: 8px; }
-        .math-line { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.06); font-size: 13px; }
-        .bottom-tabs { position: fixed; left: 0; right: 0; bottom: 0; height: var(--tab-height); display: flex; justify-content: space-around; align-items: center; background: #060607; border-top: 1px solid rgba(255,255,255,0.06); padding-bottom: env(safe-area-inset-bottom); }
-        .tab-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--muted); font-size: 11px; flex: 1; cursor: pointer; }
-        .tab-btn.active { color: #fff; }
+        html, body {
+            height: 100%;
+            background: var(--bg);
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #fff;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom));
+        }
+        .app {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: calc(env(safe-area-inset-top) + 12px) 12px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap);
+            opacity: 1;
+            visibility: visible;
+        }
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .summary-bar {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .summary-kpis {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .kpi {
+            background: rgba(255,255,255,0.02);
+            padding: 8px 10px;
+            border-radius: 8px;
+            min-width: 110px;
+            border: 1px solid rgba(255,255,255,0.02);
+        }
+        .kpi b {
+            display: block;
+            font-size: 1.05rem;
+            margin-top: 2px;
+            color: #fff;
+        }
+        .pill {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #121214;
+            color: var(--muted);
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .muted {
+            color: var(--muted);
+        }
+        .small {
+            font-size: 13px;
+        }
+        .ghost {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 8px 12px;
+            border-radius: 8px;
+            color: var(--muted);
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .ghost:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 8px 14px;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--muted);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab:hover {
+            color: #fff;
+        }
+        .tab.active {
+            background: #121214;
+            color: #fff;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.05);
+        }
+        .tc-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 10px 8px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.01);
+            border: 1px solid rgba(255,255,255,0.02);
+        }
+        .tc-date {
+            width: 110px;
+            min-width: 110px;
+            color: #fff;
+        }
+        .tc-inputs {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex: 1;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .tc-select {
+            background: #0b0b0c;
+            border: 1px solid #1a1a1b;
+            color: #fff;
+            padding: 8px;
+            border-radius: 8px;
+            min-width: 72px;
+            text-align: right;
+            font-size: 13px;
+        }
+        .input-num {
+            background: #0b0b0c;
+            border: 1px solid #1a1a1b;
+            padding: 8px;
+            border-radius: 8px;
+            color: #fff;
+            width: 100px;
+            text-align: right;
+            font-size: 13px;
+        }
+        .math-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(255,255,255,0.06);
+            font-size: 13px;
+            color: #fff;
+        }
+        .bottom-tabs {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: var(--tab-height);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: linear-gradient(180deg, rgba(6,6,7,0.85), rgba(6,6,7,0.98));
+            z-index: 50;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .tab-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--muted);
+            font-size: 11px;
+            flex: 1;
+            padding: 6px 0;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .tab-btn:hover {
+            color: #fff;
+        }
+        .tab-btn.active {
+            color: #fff;
+        }
     </style>
 </head>
 <body>
-    <div class="app" x-data="{
-        tab: 'time',
-        baseRate: 41.64,
-        days: [
-            { date: 'Mon 6/1', reg: 12, ot: 0 },
-            { date: 'Tue 6/2', reg: 12, ot: 0 },
-            { date: 'Wed 6/3', reg: 12, ot: 0 },
-            { date: 'Thu 6/4', reg: 12, ot: 0 },
-            { date: 'Fri 6/5', reg: 12, ot: 0 },
-            { date: 'Sat 6/6', reg: 0, ot: 0 },
-            { date: 'Sun 6/7', reg: 0, ot: 0 }
-        ],
-        get gross() {
-            return this.days.reduce((sum, d) => sum + (Number(d.reg) * this.baseRate) + (Number(d.ot) * this.baseRate * 1.5), 0);
-        },
-        get stateTax() { return this.gross * 0.0499; },
-        get net() { return this.gross - this.stateTax; }
-    }">
+    <div class="app" x-data="payrollApp()" x-init="init()">
         <div class="summary-bar card">
             <div>
-                <div style="font-weight:800; font-size:1.1rem;">June 2026</div>
+                <div style="font-weight:800; font-size:1.1rem; color: #fff;">June 2026</div>
                 <div class="summary-kpis">
-                    <div class="kpi"><small class="muted small">Projected Gross</small><b x-text="'$' + gross.toFixed(2)">$0.00</b></div>
-                    <div class="kpi"><small class="muted small">Est Net Pay</small><b x-text="'$' + net.toFixed(2)" style="color:var(--success)">$0.00</b></div>
+                    <div class="kpi">
+                        <small class="muted small">Projected Gross</small>
+                        <b x-text="'$' + gross.toFixed(2)">$0.00</b>
+                    </div>
+                    <div class="kpi">
+                        <small class="muted small">Est Net Pay</small>
+                        <b style="color:var(--success)" x-text="'$' + net.toFixed(2)">$0.00</b>
+                    </div>
                 </div>
             </div>
             <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px">
-                <div class="pill small">Pay Period Fixed Frame</div>
+                <div class="pill small">Pay Period: 6/1 — 6/14</div>
             </div>
         </div>
 
         <div class="card">
             <div class="tabs">
-                <div class="tab" :class="tab === 'time' ? 'active' : ''" @click="tab = 'time'">Timecard</div>
-                <div class="tab" :class="tab === 'tax' ? 'active' : ''" @click="tab = 'tax'">Taxes</div>
+                <div class="tab" @click="tab = 'time'" :class="tab === 'time' ? 'active' : ''">Timecard</div>
+                <div class="tab" @click="tab = 'tax'" :class="tab === 'tax' ? 'active' : ''">Taxes</div>
             </div>
 
-            <div x-show="tab === 'time'">
+            <div x-show="tab === 'time'" style="display: block;">
                 <template x-for="(day, index) in days" :key="index">
                     <div class="tc-row">
-                        <div class="tc-date"><div style="font-weight:700" x-text="day.date"></div></div>
+                        <div class="tc-date">
+                            <div style="font-weight:700" x-text="day.date"></div>
+                        </div>
                         <div class="tc-inputs">
                             <div>
                                 <label class="small muted">Reg</label>
-                                <select class="tc-select" x-model="day.reg">
+                                <select class="tc-select" x-model.number="day.reg">
                                     <template x-for="h in [0,4,6,8,10,12]">
                                         <option :value="h" x-text="h"></option>
                                     </template>
@@ -94,7 +248,7 @@
                             </div>
                             <div>
                                 <label class="small muted" style="color:var(--danger)">OT</label>
-                                <select class="tc-select" style="color:var(--danger)" x-model="day.ot">
+                                <select class="tc-select" style="color:var(--danger)" x-model.number="day.ot">
                                     <template x-for="h in [0,2,4,6,8]">
                                         <option :value="h" x-text="h"></option>
                                     </template>
@@ -105,19 +259,81 @@
                 </template>
             </div>
 
-            <div x-show="tab === 'tax'">
+            <div x-show="tab === 'tax'" style="display: none;">
                 <div class="card">
-                    <div class="math-line"><span>Taxable Gross</span><span x-text="'$' + gross.toFixed(2)"></span></div>
-                    <div class="math-line"><span>GA State Tax (4.99%)</span><span x-text="'$' + stateTax.toFixed(2)"></span></div>
-                    <div class="math-line" style="font-weight:700;"><span>Total Taxes</span><span x-text="'$' + stateTax.toFixed(2)"></span></div>
+                    <div class="math-line">
+                        <span>Taxable Gross</span>
+                        <span x-text="'$' + gross.toFixed(2)"></span>
+                    </div>
+                    <div class="math-line">
+                        <span>Federal Withholding (8.2%)</span>
+                        <span x-text="'$' + fedTax.toFixed(2)"></span>
+                    </div>
+                    <div class="math-line">
+                        <span>Social Security (6.2%)</span>
+                        <span x-text="'$' + (gross * 0.062).toFixed(2)"></span>
+                    </div>
+                    <div class="math-line">
+                        <span>Medicare (1.45%)</span>
+                        <span x-text="'$' + (gross * 0.0145).toFixed(2)"></span>
+                    </div>
+                    <div class="math-line">
+                        <span>GA State Tax (4.99%)</span>
+                        <span x-text="'$' + stateTax.toFixed(2)"></span>
+                    </div>
+                    <div class="math-line" style="font-weight:700; border-bottom:none;">
+                        <span>Total Taxes</span>
+                        <span x-text="'$' + totalTaxes.toFixed(2)"></span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="bottom-tabs">
-            <div class="tab-btn" :class="tab === 'time' ? 'active' : ''" @click="tab = 'time'"><span>⏱</span><span>Time</span></div>
-            <div class="tab-btn" :class="tab === 'tax' ? 'active' : ''" @click="tab = 'tax'"><span>💸</span><span>Tax</span></div>
+            <div class="tab-btn" @click="tab = 'time'" :class="tab === 'time' ? 'active' : ''">
+                <span>⏱</span><span>Time</span>
+            </div>
+            <div class="tab-btn" @click="tab = 'tax'" :class="tab === 'tax' ? 'active' : ''">
+                <span>💸</span><span>Tax</span>
+            </div>
         </div>
     </div>
+
+    <script>
+        function payrollApp() {
+            return {
+                tab: 'time',
+                baseRate: 41.64,
+                days: [
+                    { date: 'Mon 6/1', reg: 12, ot: 0 },
+                    { date: 'Tue 6/2', reg: 12, ot: 0 },
+                    { date: 'Wed 6/3', reg: 12, ot: 0 },
+                    { date: 'Thu 6/4', reg: 12, ot: 0 },
+                    { date: 'Fri 6/5', reg: 12, ot: 0 },
+                    { date: 'Sat 6/6', reg: 0, ot: 0 },
+                    { date: 'Sun 6/7', reg: 0, ot: 0 }
+                ],
+                init() {
+                    // Initialize on load
+                    console.log('App initialized');
+                },
+                get gross() {
+                    return this.days.reduce((sum, d) => sum + (Number(d.reg) * this.baseRate) + (Number(d.ot) * this.baseRate * 1.5), 0);
+                },
+                get fedTax() {
+                    return this.gross * 0.082;
+                },
+                get stateTax() {
+                    return this.gross * 0.0499;
+                },
+                get totalTaxes() {
+                    return this.fedTax + (this.gross * 0.062) + (this.gross * 0.0145) + this.stateTax;
+                },
+                get net() {
+                    return this.gross - this.totalTaxes;
+                }
+            };
+        }
+    </script>
 </body>
 </html>
