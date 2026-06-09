@@ -11,3 +11,9 @@ Thumbs.db
 index_bak.html
 index_old.html
 *.tmp
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
