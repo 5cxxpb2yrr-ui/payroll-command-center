@@ -190,43 +190,96 @@
         }
         .tc-select { min-width: 72px; text-align: right; }
         .input-num { width: 100px; text-align: right; }
+        
+        /* Enhanced Calendar Grid */
+        .cal-container {
+            padding: 12px 0;
+        }
+        .cal-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+        }
+        .cal-weekday {
+            text-align: center;
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 12px;
+            padding: 4px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
         .cal-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-            margin-top: 8px;
+            gap: 8px;
         }
         .cal-cell {
-            background: #0b0b0c;
-            padding: 8px;
-            border-radius: 8px;
-            min-height: 56px;
+            background: linear-gradient(180deg, #1a1a1b, #0b0b0c);
+            padding: 12px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 13px;
-            border: 1px solid rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
             display: flex;
             flex-direction: column;
+            min-height: 110px;
+            transition: all 0.2s;
+            position: relative;
         }
-        .cal-cell:hover { background: #121214; }
-        .cal-cell.header {
-            opacity: 0.6;
-            font-weight: 700;
-            text-align: center;
-            min-height: unset;
-            cursor: default;
+        .cal-cell:hover {
+            background: linear-gradient(180deg, #252525, #131314);
+            border-color: rgba(255,255,255,0.12);
+            transform: translateY(-2px);
+        }
+        .cal-cell.empty {
             background: transparent;
             border: none;
+            cursor: default;
         }
-        .cal-cell .num { font-weight: 700; color: #fff; }
-        .cal-cell .gross { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
-        .cal-tags { margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
+        .cal-cell.empty:hover {
+            transform: none;
+        }
+        .cal-date {
+            font-weight: 800;
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 6px;
+            line-height: 1;
+        }
+        .cal-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .cal-gross {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .cal-tags {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
         .cal-tag {
-            padding: 2px 6px;
+            padding: 3px 6px;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 10px;
+            font-weight: 600;
             background: #2b2b2c;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
-        .cal-tag.coverage { background: #1b2b1b; color: var(--success); }
+        .cal-tag.pto { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
+        .cal-tag.coverage { background: rgba(45, 212, 191, 0.2); color: var(--success); }
+        
         .math-line {
             display: flex;
             justify-content: space-between;
@@ -435,29 +488,33 @@
             </template>
 
             <template x-if="tab === 'calendar'">
-                <div class="cal-grid">
-                    <template x-for="day in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']">
-                        <div class="cal-cell header" x-text="day"></div>
-                    </template>
-                    <template x-for="blank in calendarBlanks">
-                        <div class="cal-cell" style="background:transparent;border:none;"></div>
-                    </template>
-                    <template x-for="day in calendarDays">
-                        <div class="cal-cell" @click="openDaySheet(day)">
-                            <div style="display:flex;justify-content:space-between;align-items:center">
-                                <div class="num" x-text="day.dayNum"></div>
-                                <div class="gross" x-text="'$' + day.estGross.toFixed(0)"></div>
+                <div class="cal-container">
+                    <div class="cal-weekdays">
+                        <template x-for="day in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']">
+                            <div class="cal-weekday" x-text="day"></div>
+                        </template>
+                    </div>
+                    <div class="cal-grid">
+                        <template x-for="blank in calendarBlanks">
+                            <div class="cal-cell empty"></div>
+                        </template>
+                        <template x-for="day in calendarDays">
+                            <div class="cal-cell" @click="openDaySheet(day)">
+                                <div class="cal-date" x-text="day.dayNum"></div>
+                                <div class="cal-info">
+                                    <div class="cal-gross" x-text="'$' + day.estGross.toFixed(0)"></div>
+                                    <div class="cal-tags">
+                                        <template x-if="day.leaveType">
+                                            <div class="cal-tag pto" x-text="day.leaveType.split(' ')[0]"></div>
+                                        </template>
+                                        <template x-if="day.shiftCoverage">
+                                            <div class="cal-tag coverage">Coverage</div>
+                                        </template>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="cal-tags">
-                                <template x-if="day.leaveType">
-                                    <div class="cal-tag" x-text="day.leaveType"></div>
-                                </template>
-                                <template x-if="day.shiftCoverage">
-                                    <div class="cal-tag coverage">Cov</div>
-                                </template>
-                            </div>
-                        </div>
-                    </template>
+                        </template>
+                    </div>
                 </div>
             </template>
 
